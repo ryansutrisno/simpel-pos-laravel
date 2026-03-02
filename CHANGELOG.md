@@ -5,6 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.0] - 2026-03-01
+
+### Added
+
+#### Expense Tracking System
+- Expense model with expense number generation (EXP-YYYYMMDD-XXXX format)
+- ExpenseCategory model for categorizing expenses
+- Expense recording with amount, description, date, and attachment
+- Link expenses to shifts for shift-based expense tracking
+- Expense reporting by category and date range
+- ExpenseService for expense operations
+
+#### Shift Management System
+- Shift model for cashier shift management
+- Shift types: morning (pagi) and evening (sore)
+- Opening cash tracking when starting shift
+- Closing cash tracking with expected cash calculation
+- Cash difference calculation (surplus/shortage)
+- Shift status tracking (open/closed)
+- Link transactions to shifts
+- Link expenses to shifts
+- Shift summary report (sales, transactions, expenses)
+- ShiftService for shift operations
+- Open/close shift validation (prevent multiple open shifts)
+
+#### Staff Performance Report
+- StaffPerformanceService for performance metrics
+- Sales performance by user (total sales, transaction count)
+- Average transaction value per staff
+- Items sold count per staff
+- Top staff ranking with detailed metrics
+- Date range filtering for performance reports
+- StaffPerformanceReport page in Filament
+
+### Database Tables
+- `expense_categories` - Expense category definitions
+- `expenses` - Expense records with shift linkage
+- `shifts` - Shift management (opening/closing cash, status)
+
+### Filament Resources
+- ExpenseResource - Expense management with category filtering
+- ExpenseCategoryResource - Expense category management
+- ShiftResource - Shift management with open/close actions
+
+### Filament Pages
+- StaffPerformanceReport - Staff performance analytics page
+
+### Services
+- `ExpenseService` - Expense tracking and reporting
+- `ShiftService` - Shift management and cash tracking
+- `StaffPerformanceService` - Staff performance metrics
+
+### Widgets
+- ExpenseSummaryWidget - Daily expense summary on dashboard
+- TopStaffWidget - Top performing staff display
+- CurrentShiftWidget - Current shift status indicator
+
+### Tests
+- ExpenseTest with 13 test cases covering:
+  - Expense creation and relationships
+  - Expense service methods
+  - Category filtering
+- ShiftTest with 19 test cases covering:
+  - Shift creation and management
+  - Open/close shift operations
+  - Shift service methods
+  - Scope filtering
+
 ## [2.7.1] - 2026-03-01
 
 ### Fixed
@@ -495,6 +563,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 2.8.0 | 2026-03-01 | Expense tracking, shift management, and staff performance reports |
 | 2.7.1 | 2026-03-01 | Bug fixes: null safety improvements, UI refinements, navigation fixes |
 | 2.7.0 | 2026-02-27 | Backup & restore system with automatic daily backups |
 | 2.6.0 | 2026-02-26 | Tax (PPN) system for stores and transactions |
@@ -571,4 +640,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 │   ├── Restore from Backup
 │   ├── Download Backup Files
 │   └── Backup Cleanup
+├── Expense Tracking
+│   ├── Expense Categories
+│   ├── Expense Recording
+│   ├── Shift-linked Expenses
+│   └── Expense Reporting
+├── Shift Management
+│   ├── Morning/Evening Shifts
+│   ├── Opening Cash Tracking
+│   ├── Closing Cash Tracking
+│   ├── Cash Difference Calculation
+│   └── Shift Summary Reports
+├── Staff Performance
+│   ├── Sales by Staff
+│   ├── Transaction Count
+│   ├── Average Transaction Value
+│   └── Top Staff Rankings
 ```

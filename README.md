@@ -24,6 +24,9 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 - **Tax (PPN) System**: Configure tax rate, enable/disable per store, automatic calculation in transactions
 - **Backup & Restore**: Automatic daily database backups with manual backup options, restore from backup, and backup management UI
 - **Role-Based Access Control**: Filament Shield integration with 5 predefined roles
+- **Expense Tracking**: Record operational expenses with categories (utilities, salaries, supplies, etc.)
+- **Shift Management**: Manage cashier shifts (morning/evening) with opening/closing cash tracking
+- **Staff Performance Report**: Track sales performance per cashier with transaction metrics
 
 ## Tech Stack
 
@@ -341,6 +344,33 @@ Handles database backup and restore operations:
   - `php artisan backup:run` - Full backup (database + files)
   - `php artisan backup:restore {filename}` - Restore from backup
   - `php artisan backup:clean` - Clean old backups
+
+### ExpenseService
+Manages operational expense tracking:
+- `generateExpenseNumber()` - Generate unique expense number (EXP-YYYYMMDD-XXXX format)
+- `getTotalByCategory()` - Get expense totals grouped by category
+- `getDailyExpense()` - Get total expenses for a specific date
+- `getMonthlyExpense()` - Get total expenses for a month
+- `getExpenseByShift()` - Get expenses linked to a specific shift
+- Supports expense categories: utilities, salaries, supplies, etc.
+
+### ShiftService
+Manages cashier shift operations:
+- `openShift()` - Open new shift with opening cash
+- `closeShift()` - Close shift with closing cash and calculate difference
+- `getActiveShift()` - Get user's currently active shift
+- `hasActiveShift()` - Check if user has an open shift
+- `getShiftSummary()` - Get shift summary (sales, transactions, expenses)
+- `calculateExpectedCash()` - Calculate expected closing cash
+- Shift types: morning (pagi), evening (sore)
+
+### StaffPerformanceService
+Tracks cashier performance metrics:
+- `getSalesByUser()` - Get total sales by user in date range
+- `getTransactionCountByUser()` - Get transaction count by user
+- `getAverageTransactionValue()` - Get average transaction value
+- `getItemsSoldByUser()` - Get total items sold by user
+- `getTopStaff()` - Get top performing staff with rankings
 
 ## Troubleshooting
 
