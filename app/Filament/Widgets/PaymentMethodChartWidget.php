@@ -12,7 +12,7 @@ class PaymentMethodChartWidget extends ChartWidget
 
     protected static ?string $heading = 'Metode Pembayaran';
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 3;
 
     public ?string $filter = '7';
 
@@ -66,6 +66,17 @@ class PaymentMethodChartWidget extends ChartWidget
                     'position' => 'bottom',
                 ],
             ],
+            'maintainAspectRatio' => false,
+        ];
+    }
+
+    protected function getColumnSpanResponsive(): array
+    {
+        return [
+            'default' => 12,
+            'sm' => 12,
+            'md' => 6,
+            'xl' => 6,
         ];
     }
 }

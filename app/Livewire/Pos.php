@@ -13,6 +13,7 @@ use App\Models\TransactionPayment;
 use App\Services\DiscountService;
 use App\Services\PointService;
 use App\Services\ReceiptTemplateService;
+use App\Services\ShiftService;
 use App\Services\TaxService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -112,6 +113,16 @@ class Pos extends Component
         $this->selectedTemplateId = $activeTemplate?->id;
 
         $this->taxEnabled = $this->store?->isTaxEnabled() ?? false;
+
+        // Check for active shift
+        if (! ShiftService::hasActiveShift(Auth::id())) {
+            Notification::make()
+                ->title('Tidak ada shift aktif')
+                ->body('Anda harus membuka shift terlebih dahulu sebelum melakukan transaksi.')
+                ->warning()
+                ->persistent()
+                ->send();
+        }
     }
 
     public function updatedPaymentMethod($value)
@@ -742,6 +753,7 @@ class Pos extends Component
 
         $transaction = Transaction::create([
             'user_id' => Auth::id(),
+            'shift_id' => ShiftService::getActiveShift(Auth::id())?->id,
             'customer_id' => $this->selectedCustomerId,
             'discount_id' => $discountId,
             'total' => $grandTotal,
@@ -844,6 +856,7 @@ class Pos extends Component
 
         $transaction = Transaction::create([
             'user_id' => Auth::id(),
+            'shift_id' => ShiftService::getActiveShift(Auth::id())?->id,
             'customer_id' => $this->selectedCustomerId,
             'discount_id' => $discountId,
             'total' => $grandTotal,
@@ -941,6 +954,7 @@ class Pos extends Component
 
         $transaction = Transaction::create([
             'user_id' => Auth::id(),
+            'shift_id' => ShiftService::getActiveShift(Auth::id())?->id,
             'customer_id' => $this->selectedCustomerId,
             'discount_id' => $discountId,
             'total' => $grandTotal,

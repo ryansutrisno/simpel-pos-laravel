@@ -43,4 +43,32 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(SuspendedTransaction::class);
     }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    public function shifts(): HasMany
+    {
+        return $this->hasMany(Shift::class);
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function activeShift(): ?Shift
+    {
+        return $this->shifts()
+            ->where('status', 'open')
+            ->whereDate('shift_date', today())
+            ->first();
+    }
+
+    public function hasActiveShift(): bool
+    {
+        return $this->activeShift() !== null;
+    }
 }

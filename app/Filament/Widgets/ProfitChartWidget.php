@@ -13,7 +13,7 @@ class ProfitChartWidget extends ChartWidget
 
     protected static ?string $heading = 'Tren Profit';
 
-    protected static ?int $sort = 6;
+    protected static ?int $sort = 4;
 
     public ?string $filter = '7';
 

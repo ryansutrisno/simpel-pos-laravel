@@ -12,6 +12,8 @@ class TransactionsChart extends ChartWidget
 {
     use HasWidgetShield;
 
+    protected static ?int $sort = 2;
+
     protected static ?string $heading = 'Bagan Transaksi';
 
     public ?string $filter = 'today';

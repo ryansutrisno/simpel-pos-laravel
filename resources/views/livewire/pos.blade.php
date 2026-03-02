@@ -18,14 +18,14 @@
                 <div class="flex items-center gap-3 mt-2 md:mt-0">
                     <div class="text-sm text-gray-600 dark:text-gray-300"> Kasir: {{ Auth::user()->name }} </div>
                     <button onclick="window.connectPrinter()"
-                        class="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                        class="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
                             stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4">
                             <path
                                 d="M7 17v-2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2M7 17v2a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2M7 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1m0 0V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2M6 7h12m0 0h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2" />
                         </svg> Hubungkan Printer </button>
                     <a href="{{ route('filament.admin.pages.end-of-day-report') }}"
-                        class="flex items-center gap-1 px-3 py-1.5 bg-orange-600 text-white text-xs font-medium rounded-lg hover:bg-orange-700 transition-colors">
+                        class="flex items-center gap-1 px-3 py-1.5 bg-orange-600 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-lg hover:bg-orange-700 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                             stroke="currentColor" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -102,7 +102,7 @@
                             class="w-full h-32 object-cover rounded-lg">
                 @else
                 <div
-                            class="w-full h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                            class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
                             <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />

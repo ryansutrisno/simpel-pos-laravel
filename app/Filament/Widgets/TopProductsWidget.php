@@ -12,7 +12,7 @@ class TopProductsWidget extends ChartWidget
 
     protected static ?string $heading = 'Produk Terlaris';
 
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 4;
 
     public ?string $filter = '7';
 

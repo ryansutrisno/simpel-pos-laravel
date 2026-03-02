@@ -15,6 +15,7 @@ class Transaction extends Model
         'user_id',
         'customer_id',
         'discount_id',
+        'shift_id',
         'total',
         'subtotal_before_discount',
         'discount_amount',
@@ -71,6 +72,11 @@ class Transaction extends Model
     public function discount(): BelongsTo
     {
         return $this->belongsTo(Discount::class);
+    }
+
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
     }
 
     public function pointsHistory(): HasMany
