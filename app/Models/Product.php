@@ -22,10 +22,13 @@ class Product extends Model
         'selling_price',
         'stock',
         'low_stock_threshold',
+        'reorder_point',
+        'reorder_quantity',
         'barcode',
         'image',
         'is_active',
         'is_returnable',
+        'last_reorder_alert_at',
     ];
 
     protected $casts = [
@@ -34,6 +37,9 @@ class Product extends Model
         'purchase_price' => 'decimal:2',
         'selling_price' => 'decimal:2',
         'low_stock_threshold' => 'integer',
+        'reorder_point' => 'integer',
+        'reorder_quantity' => 'integer',
+        'last_reorder_alert_at' => 'datetime',
     ];
 
     public function category(): BelongsTo
@@ -60,9 +66,44 @@ class Product extends Model
             });
     }
 
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    public function activeVariants(): HasMany
+    {
+        return $this->variants()->where('is_active', true);
+    }
+
+    public function hasVariants(): bool
+    {
+        return $this->variants()->where('is_active', true)->exists();
+    }
+
+    public function bundleItems(): HasMany
+    {
+        return $this->hasMany(BundleItem::class);
+    }
+
+    public function reorderAlerts(): HasMany
+    {
+        return $this->hasMany(ReorderAlert::class);
+    }
+
+    public function pendingReorderAlerts(): HasMany
+    {
+        return $this->reorderAlerts()->where('status', 'pending');
+    }
+
     public function isLowStock(): bool
     {
         return $this->stock <= $this->low_stock_threshold;
+    }
+
+    public function needsReorder(): bool
+    {
+        return $this->stock <= $this->reorder_point;
     }
 
     public function isReturnable(): bool
@@ -73,6 +114,11 @@ class Product extends Model
     public function scopeLowStock(Builder $query): Builder
     {
         return $query->whereColumn('stock', '<=', 'low_stock_threshold');
+    }
+
+    public function scopeNeedsReorder(Builder $query): Builder
+    {
+        return $query->whereColumn('stock', '<=', 'reorder_point');
     }
 
     public function scopeReturnable(Builder $query): Builder

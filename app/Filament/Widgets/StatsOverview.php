@@ -12,11 +12,13 @@ class StatsOverview extends BaseWidget
 {
     use HasWidgetShield;
 
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 3;
 
     protected ?string $heading = 'Analisa';
 
     protected ?string $description = 'Statistik Aplikasi';
+
+    protected int|string|array $columnSpan = 'full';
 
     protected function getStats(): array
     {

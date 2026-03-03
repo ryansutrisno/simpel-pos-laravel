@@ -14,6 +14,7 @@ class TransactionItem extends Model
     protected $fillable = [
         'transaction_id',
         'product_id',
+        'variant_id',
         'quantity',
         'quantity_returned',
         'purchase_price',
@@ -45,6 +46,11 @@ class TransactionItem extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function variant(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
+
     public function discount(): BelongsTo
     {
         return $this->belongsTo(Discount::class);
@@ -68,5 +74,10 @@ class TransactionItem extends Model
     public function isPartiallyReturned(): bool
     {
         return $this->quantity_returned > 0 && $this->quantity_returned < $this->quantity;
+    }
+
+    public function hasVariant(): bool
+    {
+        return $this->variant_id !== null;
     }
 }

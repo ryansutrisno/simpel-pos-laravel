@@ -14,9 +14,17 @@ class FinancialRecordsChart extends ChartWidget
 
     protected static ?string $heading = 'Bagan Keuangan';
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 5;
 
     public ?string $filter = 'today';
+
+    public function getColumnSpan(): int|string|array
+    {
+        return [
+            'default' => 'full',
+            'lg' => 1,
+        ];
+    }
 
     protected function getFilters(): ?array
     {
@@ -104,16 +112,6 @@ class FinancialRecordsChart extends ChartWidget
                     ],
                 ],
             ],
-        ];
-    }
-
-    protected function getColumnSpanResponsive(): array
-    {
-        return [
-            'default' => 12, // Full width pada mobile
-            'sm' => 12,      // Full width pada tablet
-            'md' => 6,       // Setengah width pada desktop
-            'xl' => 6,       // Setengah width pada large desktop
         ];
     }
 }

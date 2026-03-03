@@ -109,7 +109,12 @@
                             </svg>
                         </div>
                 @endif </div>
-                    <h3 class="font-medium text-gray-900 dark:text-white text-sm truncate">{{ $product->name }}</h3>
+                    <div class="flex items-start justify-between">
+                        <h3 class="font-medium text-gray-900 dark:text-white text-sm truncate flex-1">{{ $product->name }}</h3>
+                        @if($product->variants()->where('is_active', true)->exists())
+                        <span class="text-[10px] bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded">Varian</span>
+                        @endif
+                    </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Stok: {{ $product->stock }}</p>
                     <div class="mt-1 flex justify-between items-center">
                         <span class="text-primary-600 dark:text-primary-400 font-medium text-sm">Rp {{
@@ -119,7 +124,7 @@
                             , 'bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'=>
                             $product->stock > 0, 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500
                             cursor-not-allowed' => $product->stock <= 0, ]) @disabled($product->stock <= 0)> {{
-                                    $product->stock > 0 ? '+' : 'Habis' }} </button>
+                                    $product->stock > 0 ? ('+') : 'Habis' }} </button>
                     </div>
                 </div>
                 @empty
@@ -219,6 +224,27 @@
                     <p class="text-gray-500 dark:text-gray-400">Keranjang masih kosong</p>
                 </div>
                 @endif </div>
+                @if($appliedBundle)
+                <div class="mx-4 mb-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-green-800 dark:text-green-200">{{ $appliedBundle->name }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">
+                                @if($appliedBundle->isFreeItem())
+                                    Gratis item berlaku!
+                                @elseif($appliedBundle->isPercentage())
+                                    Diskon {{ $appliedBundle->discount_value }}% berlaku
+                                @else
+                                    Diskon Rp {{ number_format($bundleDiscount, 0, ',', '.') }} berlaku
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endif
                 @if(count($cart) > 0)
                 <div
                 class="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 sticky bottom-0">
@@ -442,6 +468,52 @@
             </div>
         </div>
     </div>
+        <!-- Variant Selection Modal -->
+    @if($showVariantModal)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pilih Varian</h3>
+                <button wire:click="closeVariantModal"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $selectedProductForVariant?->name }}</p>
+            </div>
+            <div class="overflow-y-auto flex-1 space-y-2">
+                @forelse($availableVariants as $variant)
+                <button wire:click="selectVariant({{ $variant->id }})"
+                    class="w-full flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors {{ $variant->stock <= 0 ? 'opacity-50 cursor-not-allowed' : '' }}"
+                    {{ $variant->stock <= 0 ? 'disabled' : '' }}>
+                    <div class="text-left">
+                        <p class="font-medium text-gray-900 dark:text-white">{{ $variant->variant_name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">SKU: {{ $variant->sku }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold text-primary-600 dark:text-primary-400">
+                            Rp {{ number_format($variant->selling_price, 0, ',', '.') }}
+                        </p>
+                        <p class="text-xs {{ $variant->stock <= $variant->low_stock_threshold ? 'text-red-500' : 'text-gray-500 dark:text-gray-400' }}">
+                            Stok: {{ $variant->stock }}
+                        </p>
+                    </div>
+                </button>
+                @empty
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <p class="text-gray-500 dark:text-gray-400">Tidak ada varian tersedia</p>
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    @endif
     <!-- Suspended Transactions Modal -->
                 @if($showSuspendedModal)
                 <div

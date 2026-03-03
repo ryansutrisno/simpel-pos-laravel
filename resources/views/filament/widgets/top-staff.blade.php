@@ -42,9 +42,9 @@
                 @endforeach
             </div>
         @else
-            <div class="text-center py-8 text-gray-500">
-                <x-heroicon-o-user-group class="w-12 h-12 mx-auto mb-2 opacity-50"/>
-                <p>Belum ada transaksi hari ini</p>
+            <div class="flex flex-col items-center justify-center py-6 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <x-heroicon-o-user-group class="w-8 h-8 mx-auto mb-3 text-gray-400"/>
+                <p class="text-sm font-medium">Belum ada transaksi hari ini</p>
             </div>
         @endif
     </x-filament::section>

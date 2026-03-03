@@ -65,10 +65,68 @@ class ProductResource extends Resource
                             ->label('Stok Produk')
                             ->numeric()
                             ->required(),
+                        Forms\Components\TextInput::make('reorder_point')
+                            ->label('Batas Reorder')
+                            ->numeric()
+                            ->integer()
+                            ->default(10)
+                            ->helperText('Stok minimum sebelum alert reorder'),
+                        Forms\Components\TextInput::make('reorder_quantity')
+                            ->label('Jumlah Reorder Ideal')
+                            ->numeric()
+                            ->integer()
+                            ->default(50)
+                            ->helperText('Jumlah ideal saat reorder'),
                         Forms\Components\Toggle::make('is_active')
                             ->label('Active')
                             ->default(true),
                     ])->columns(2),
+                Forms\Components\Section::make('Varian Produk')
+                    ->schema([
+                        Forms\Components\Repeater::make('variants')
+                            ->relationship('variants')
+                            ->label('')
+                            ->schema([
+                                Forms\Components\TextInput::make('variant_name')
+                                    ->label('Nama Varian')
+                                    ->required(),
+                                Forms\Components\TextInput::make('sku')
+                                    ->label('SKU')
+                                    ->unique(ignoreRecord: true)
+                                    ->required(),
+                                Forms\Components\TextInput::make('purchase_price')
+                                    ->label('Harga Beli')
+                                    ->numeric()
+                                    ->prefix('Rp')
+                                    ->required(),
+                                Forms\Components\TextInput::make('selling_price')
+                                    ->label('Harga Jual')
+                                    ->numeric()
+                                    ->prefix('Rp')
+                                    ->required(),
+                                Forms\Components\TextInput::make('stock')
+                                    ->label('Stok')
+                                    ->numeric()
+                                    ->integer()
+                                    ->default(0),
+                                Forms\Components\TextInput::make('low_stock_threshold')
+                                    ->label('Batas Stok Min')
+                                    ->numeric()
+                                    ->integer()
+                                    ->default(10),
+                                Forms\Components\Toggle::make('is_active')
+                                    ->label('Aktif')
+                                    ->default(true),
+                            ])
+                            ->columns(2)
+                            ->addActionLabel('Tambah Varian')
+                            ->reorderableWithButtons()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['variant_name'] ?? null),
+                    ])
+                    ->collapsible()
+                    ->collapsed(fn (string $operation): bool => $operation === 'create'),
+
                 Forms\Components\Section::make('Gambar Produk')
                     ->schema([
                         FileUpload::make('image')

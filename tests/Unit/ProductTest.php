@@ -13,6 +13,8 @@ it('product has correct fillable attributes', function () {
         'selling_price',
         'stock',
         'low_stock_threshold',
+        'reorder_point',
+        'reorder_quantity',
         'barcode',
         'image',
         'is_active',

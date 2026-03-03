@@ -10,7 +10,7 @@ class CurrentShiftWidget extends Widget
 {
     use HasWidgetShield;
 
-    protected static ?int $sort = -10;
+    protected static ?int $sort = 1;
 
     protected static string $view = 'filament.widgets.current-shift';
 

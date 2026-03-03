@@ -13,7 +13,9 @@ class SalesChartWidget extends ChartWidget
 
     protected static ?string $heading = 'Grafik Penjualan';
 
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 9;
+
+    protected int|string|array $columnSpan = ['default' => 'full', 'lg' => 1];
 
     public ?string $filter = '7';
 

@@ -10,11 +10,14 @@ use App\Models\SplitBill;
 use App\Models\SuspendedTransaction;
 use App\Models\Transaction;
 use App\Models\TransactionPayment;
+use App\Services\BundleService;
 use App\Services\DiscountService;
 use App\Services\PointService;
 use App\Services\ReceiptTemplateService;
+use App\Services\ReorderPointService;
 use App\Services\ShiftService;
 use App\Services\TaxService;
+use App\Services\VariantService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -84,6 +87,16 @@ class Pos extends Component
 
     public $barcodeInput = '';
 
+    public $showVariantModal = false;
+
+    public $selectedProductForVariant = null;
+
+    public $availableVariants = [];
+
+    public $appliedBundle = null;
+
+    public $bundleDiscount = 0;
+
     public $taxEnabled = false;
 
     protected PointService $pointService;
@@ -94,11 +107,17 @@ class Pos extends Component
 
     protected $listeners = ['barcode-scanned' => 'processBarcode'];
 
-    public function boot(PointService $pointService, DiscountService $discountService, TaxService $taxService): void
+    protected BundleService $bundleService;
+
+    protected VariantService $variantService;
+
+    public function boot(PointService $pointService, DiscountService $discountService, TaxService $taxService, BundleService $bundleService, VariantService $variantService): void
     {
         $this->pointService = $pointService;
         $this->discountService = $discountService;
         $this->taxService = $taxService;
+        $this->bundleService = $bundleService;
+        $this->variantService = $variantService;
     }
 
     public function mount()
@@ -258,8 +277,9 @@ class Pos extends Component
         $globalDiscount = $this->getGlobalDiscountAmount();
         $voucherDiscount = $this->getVoucherDiscountAmount();
         $pointsDiscount = $this->getDiscountFromPoints();
+        $bundleDiscount = $this->bundleDiscount;
 
-        return max(0, $subtotal - $globalDiscount - $voucherDiscount - $pointsDiscount);
+        return max(0, $subtotal - $globalDiscount - $voucherDiscount - $pointsDiscount - $bundleDiscount);
     }
 
     public function getChangeProperty()
@@ -403,23 +423,111 @@ class Pos extends Component
         $this->selectedCategoryId = $categoryId;
     }
 
-    public function addToCart($productId)
+    public function addToCart($productId, $variantId = null)
     {
         $product = Product::find($productId);
+
+        // Check if product has variants
+        if ($variantId === null && $this->variantService->hasVariants($productId)) {
+            $this->showVariantSelection($productId);
+
+            return;
+        }
+
+        // Get variant or product data
+        if ($variantId) {
+            $variant = $this->variantService->getVariantBySku($variantId);
+            if (! $variant) {
+                $variant = \App\Models\ProductVariant::find($variantId);
+            }
+
+            if (! $variant || $variant->stock <= 0) {
+                Notification::make()
+                    ->title('Stok varian habis')
+                    ->body('Varian produk ini sudah habis')
+                    ->danger()
+                    ->send();
+
+                return;
+            }
+
+            $name = $product->name.' - '.$variant->variant_name;
+            $purchasePrice = $variant->purchase_price;
+            $sellingPrice = $variant->selling_price;
+            $stock = $variant->stock;
+        } else {
+            $name = $product->name;
+            $purchasePrice = $product->purchase_price;
+            $sellingPrice = $product->selling_price;
+            $stock = $product->stock;
+        }
+
         $discountInfo = $this->discountService->calculateProductDiscount($product);
+        $finalPrice = $variantId ? $sellingPrice : $discountInfo['final_price'];
+        $originalPrice = $variantId ? $sellingPrice : $discountInfo['original_price'];
+        $discountAmount = $variantId ? 0 : $discountInfo['discount_amount'];
 
         $this->cart[] = [
             'product_id' => $product->id,
-            'name' => $product->name,
-            'purchase_price' => $product->purchase_price,
-            'selling_price' => $product->selling_price,
-            'original_price' => $discountInfo['original_price'],
-            'discount_amount' => $discountInfo['discount_amount'],
-            'final_price' => $discountInfo['final_price'],
-            'discount_id' => $discountInfo['discount']?->id,
+            'variant_id' => $variantId,
+            'name' => $name,
+            'purchase_price' => $purchasePrice,
+            'selling_price' => $sellingPrice,
+            'original_price' => $originalPrice,
+            'discount_amount' => $discountAmount,
+            'final_price' => $finalPrice,
+            'discount_id' => $variantId ? null : ($discountInfo['discount']?->id),
             'quantity' => 1,
-            'profit' => $discountInfo['final_price'] - $product->purchase_price,
+            'profit' => $finalPrice - $purchasePrice,
         ];
+
+        // Apply bundle discounts after adding to cart
+        $this->applyBundleDiscounts();
+    }
+
+    public function showVariantSelection($productId)
+    {
+        $this->selectedProductForVariant = Product::find($productId);
+        $this->availableVariants = $this->variantService->getAvailableVariants($productId);
+        $this->showVariantModal = true;
+    }
+
+    public function selectVariant($variantId)
+    {
+        $this->addToCart($this->selectedProductForVariant->id, $variantId);
+        $this->showVariantModal = false;
+        $this->selectedProductForVariant = null;
+        $this->availableVariants = [];
+    }
+
+    public function closeVariantModal()
+    {
+        $this->showVariantModal = false;
+        $this->selectedProductForVariant = null;
+        $this->availableVariants = [];
+    }
+
+    public function applyBundleDiscounts()
+    {
+        $cartItems = collect($this->cart)->map(function ($item) {
+            return [
+                'product_id' => $item['product_id'],
+                'variant_id' => $item['variant_id'],
+                'quantity' => $item['quantity'],
+                'selling_price' => $item['selling_price'],
+            ];
+        })->toArray();
+
+        $bundleResult = $this->bundleService->applyBestBundle($cartItems);
+
+        if ($bundleResult['applied']) {
+            $this->appliedBundle = $bundleResult['bundle'];
+            $this->bundleDiscount = $bundleResult['discount'];
+            $this->cart = $bundleResult['cart_items'];
+        } else {
+            $this->appliedBundle = null;
+            $this->bundleDiscount = 0;
+        }
     }
 
     public function selectCustomer($customerId)
@@ -439,6 +547,24 @@ class Pos extends Component
 
     public function processBarcode($barcode)
     {
+        // First check if barcode matches a product variant SKU
+        $variant = $this->variantService->getVariantBySku($barcode);
+
+        if ($variant) {
+            $product = $variant->product;
+            $this->addToCart($product->id, $variant->id);
+            $this->barcodeInput = '';
+
+            Notification::make()
+                ->title('Produk ditambahkan')
+                ->body($variant->variant_name.' telah ditambahkan ke keranjang')
+                ->success()
+                ->send();
+
+            return;
+        }
+
+        // Then check regular product barcode
         $product = Product::where('barcode', $barcode)->first();
 
         if ($product) {
@@ -742,7 +868,8 @@ class Pos extends Component
         $globalDiscountAmount = $this->getGlobalDiscountAmount();
         $voucherDiscountAmount = $this->getVoucherDiscountAmount();
         $discountFromPoints = $this->getDiscountFromPoints();
-        $totalDiscountAmount = $globalDiscountAmount + $voucherDiscountAmount + $discountFromPoints;
+        $bundleDiscount = $this->bundleDiscount;
+        $totalDiscountAmount = $globalDiscountAmount + $voucherDiscountAmount + $discountFromPoints + $bundleDiscount;
         $grandTotal = max(0, $subtotalAfterProductDiscount - $totalDiscountAmount);
         $totalProfit = collect($this->cart)->sum(fn ($item) => $item['profit'] * $item['quantity']);
 
@@ -758,7 +885,7 @@ class Pos extends Component
             'discount_id' => $discountId,
             'total' => $grandTotal,
             'subtotal_before_discount' => $subtotalBeforeDiscount,
-            'discount_amount' => $this->getProductDiscountAmount() + $globalDiscountAmount + $voucherDiscountAmount,
+            'discount_amount' => $this->getProductDiscountAmount() + $globalDiscountAmount + $voucherDiscountAmount + $bundleDiscount,
             'voucher_code' => $this->appliedVoucher?->code,
             'payment_method' => $this->paymentMethod,
             'cash_amount' => $this->paymentMethod === 'cash' ? $this->cashAmount : null,
@@ -777,18 +904,27 @@ class Pos extends Component
         foreach ($this->cart as $item) {
             $transaction->items()->create([
                 'product_id' => $item['product_id'],
+                'variant_id' => $item['variant_id'] ?? null,
                 'quantity' => $item['quantity'],
                 'purchase_price' => $item['purchase_price'],
                 'selling_price' => $item['final_price'] ?? $item['selling_price'],
                 'original_price' => $item['original_price'] ?? $item['selling_price'],
-                'discount_amount' => $item['discount_amount'] ?? 0,
+                'discount_amount' => ($item['discount_amount'] ?? 0) + ($item['bundle_discount'] ?? 0),
                 'discount_id' => $item['discount_id'] ?? null,
                 'profit' => $item['profit'],
                 'subtotal' => ($item['final_price'] ?? $item['selling_price']) * $item['quantity'],
             ]);
 
-            Product::find($item['product_id'])->decrement('stock', $item['quantity']);
+            // Decrement variant stock if variant, otherwise product stock
+            if (! empty($item['variant_id'])) {
+                $this->variantService->decrementStock($item['variant_id'], $item['quantity']);
+            } else {
+                Product::find($item['product_id'])->decrement('stock', $item['quantity']);
+            }
         }
+
+        // Check for reorder alerts after stock decrement
+        ReorderPointService::checkStockLevels();
 
         if ($this->appliedVoucher) {
             $this->discountService->incrementUsage($this->appliedVoucher);
@@ -846,7 +982,8 @@ class Pos extends Component
         $globalDiscountAmount = $this->getGlobalDiscountAmount();
         $voucherDiscountAmount = $this->getVoucherDiscountAmount();
         $discountFromPoints = $this->getDiscountFromPoints();
-        $grandTotal = max(0, $subtotalAfterProductDiscount - $globalDiscountAmount - $voucherDiscountAmount - $discountFromPoints);
+        $bundleDiscount = $this->bundleDiscount;
+        $grandTotal = max(0, $subtotalAfterProductDiscount - $globalDiscountAmount - $voucherDiscountAmount - $discountFromPoints - $bundleDiscount);
         $totalProfit = collect($this->cart)->sum(fn ($item) => $item['profit'] * $item['quantity']);
 
         $discountId = null;
@@ -880,18 +1017,27 @@ class Pos extends Component
         foreach ($this->cart as $item) {
             $transaction->items()->create([
                 'product_id' => $item['product_id'],
+                'variant_id' => $item['variant_id'] ?? null,
                 'quantity' => $item['quantity'],
                 'purchase_price' => $item['purchase_price'],
                 'selling_price' => $item['final_price'] ?? $item['selling_price'],
                 'original_price' => $item['original_price'] ?? $item['selling_price'],
-                'discount_amount' => $item['discount_amount'] ?? 0,
+                'discount_amount' => ($item['discount_amount'] ?? 0) + ($item['bundle_discount'] ?? 0),
                 'discount_id' => $item['discount_id'] ?? null,
                 'profit' => $item['profit'],
                 'subtotal' => ($item['final_price'] ?? $item['selling_price']) * $item['quantity'],
             ]);
 
-            Product::find($item['product_id'])->decrement('stock', $item['quantity']);
+            // Decrement variant stock if variant, otherwise product stock
+            if (! empty($item['variant_id'])) {
+                $this->variantService->decrementStock($item['variant_id'], $item['quantity']);
+            } else {
+                Product::find($item['product_id'])->decrement('stock', $item['quantity']);
+            }
         }
+
+        // Check for reorder alerts after stock decrement
+        ReorderPointService::checkStockLevels();
 
         foreach ($payments as $payment) {
             TransactionPayment::create([
@@ -944,7 +1090,8 @@ class Pos extends Component
         $globalDiscountAmount = $this->getGlobalDiscountAmount();
         $voucherDiscountAmount = $this->getVoucherDiscountAmount();
         $discountFromPoints = $this->getDiscountFromPoints();
-        $grandTotal = max(0, $subtotalAfterProductDiscount - $globalDiscountAmount - $voucherDiscountAmount - $discountFromPoints);
+        $bundleDiscount = $this->bundleDiscount;
+        $grandTotal = max(0, $subtotalAfterProductDiscount - $globalDiscountAmount - $voucherDiscountAmount - $discountFromPoints - $bundleDiscount);
         $totalProfit = collect($this->cart)->sum(fn ($item) => $item['profit'] * $item['quantity']);
 
         $discountId = null;
@@ -974,18 +1121,27 @@ class Pos extends Component
         foreach ($this->cart as $item) {
             $transaction->items()->create([
                 'product_id' => $item['product_id'],
+                'variant_id' => $item['variant_id'] ?? null,
                 'quantity' => $item['quantity'],
                 'purchase_price' => $item['purchase_price'],
                 'selling_price' => $item['final_price'] ?? $item['selling_price'],
                 'original_price' => $item['original_price'] ?? $item['selling_price'],
-                'discount_amount' => $item['discount_amount'] ?? 0,
+                'discount_amount' => ($item['discount_amount'] ?? 0) + ($item['bundle_discount'] ?? 0),
                 'discount_id' => $item['discount_id'] ?? null,
                 'profit' => $item['profit'],
                 'subtotal' => ($item['final_price'] ?? $item['selling_price']) * $item['quantity'],
             ]);
 
-            Product::find($item['product_id'])->decrement('stock', $item['quantity']);
+            // Decrement variant stock if variant, otherwise product stock
+            if (! empty($item['variant_id'])) {
+                $this->variantService->decrementStock($item['variant_id'], $item['quantity']);
+            } else {
+                Product::find($item['product_id'])->decrement('stock', $item['quantity']);
+            }
         }
+
+        // Check for reorder alerts after stock decrement
+        ReorderPointService::checkStockLevels();
 
         foreach ($splits as $split) {
             SplitBill::create([

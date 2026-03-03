@@ -12,9 +12,17 @@ class TransactionsChart extends ChartWidget
 {
     use HasWidgetShield;
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 5;
 
     protected static ?string $heading = 'Bagan Transaksi';
+
+    public function getColumnSpan(): int|string|array
+    {
+        return [
+            'default' => 'full',
+            'lg' => 1,
+        ];
+    }
 
     public ?string $filter = 'today';
 

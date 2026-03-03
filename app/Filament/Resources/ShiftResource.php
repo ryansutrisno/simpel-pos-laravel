@@ -38,7 +38,15 @@ class ShiftResource extends Resource
                             ->required()
                             ->searchable()
                             ->preload()
+                            ->default(fn () => auth()->id())
+                            ->disabled(fn () => ! auth()->user()->hasRole(['admin', 'super_admin']))
+                            ->hidden(fn () => ! auth()->user()->hasRole(['admin', 'super_admin']))
                             ->disabledOn('edit'),
+
+                        Forms\Components\Placeholder::make('kasir_name')
+                            ->label('Kasir')
+                            ->content(fn () => auth()->user()->name)
+                            ->hidden(fn () => auth()->user()->hasRole(['admin', 'super_admin'])),
 
                         Forms\Components\Select::make('shift_type')
                             ->label('Tipe Shift')
@@ -119,7 +127,8 @@ class ShiftResource extends Resource
 
                                 $summary = ShiftService::getShiftSummary($record->id);
 
-                                return new \Illuminate\Support\HtmlString(sprintf('
+                                return new \Illuminate\Support\HtmlString(sprintf(
+                                    '
                                     <div class="grid grid-cols-2 gap-4">
                                         <div class="p-4 bg-primary-50 rounded-lg">
                                             <div class="text-sm text-gray-600">Total Penjualan</div>

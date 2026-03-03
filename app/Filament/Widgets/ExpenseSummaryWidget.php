@@ -11,11 +11,13 @@ class ExpenseSummaryWidget extends BaseWidget
 {
     use HasWidgetShield;
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 12;
 
     protected ?string $heading = 'Ringkasan Pengeluaran';
 
     protected ?string $description = 'Pengeluaran hari ini dan bulan ini';
+
+    protected int|string|array $columnSpan = 'full';
 
     protected function getStats(): array
     {
@@ -37,6 +39,6 @@ class ExpenseSummaryWidget extends BaseWidget
 
     public static function canView(): bool
     {
-        return auth()->user()->can('view_expense');
+        return auth()->user()->can('view_any_product'); // Allow for users who can view products
     }
 }

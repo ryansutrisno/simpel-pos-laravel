@@ -10,7 +10,7 @@ class TopStaffWidget extends Widget
 {
     use HasWidgetShield;
 
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 13;
 
     protected static string $view = 'filament.widgets.top-staff';
 
@@ -23,6 +23,6 @@ class TopStaffWidget extends Widget
 
     public static function canView(): bool
     {
-        return auth()->user()->can('view_staff_performance');
+        return auth()->user()->can('view_any_user'); // Allow for users who can view users
     }
 }

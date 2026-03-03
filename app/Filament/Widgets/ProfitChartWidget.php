@@ -13,7 +13,9 @@ class ProfitChartWidget extends ChartWidget
 
     protected static ?string $heading = 'Tren Profit';
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 8;
+
+    protected int|string|array $columnSpan = ['default' => 'full', 'lg' => 1];
 
     public ?string $filter = '7';
 

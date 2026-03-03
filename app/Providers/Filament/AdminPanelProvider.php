@@ -3,8 +3,18 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Backups;
+use App\Filament\Widgets\BundleSummaryWidget;
+use App\Filament\Widgets\CurrentShiftWidget;
+use App\Filament\Widgets\ExpenseSummaryWidget;
 use App\Filament\Widgets\FinancialRecordsChart;
+use App\Filament\Widgets\LowStockAlertWidget;
+use App\Filament\Widgets\PaymentMethodChartWidget;
+use App\Filament\Widgets\ProductStatsWidget;
+use App\Filament\Widgets\ProfitChartWidget;
+use App\Filament\Widgets\SalesChartWidget;
 use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\TopProductsWidget;
+use App\Filament\Widgets\TopStaffWidget;
 use App\Filament\Widgets\TransactionsChart;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -58,11 +68,31 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Pages\Pos::class,
                 Backups::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
+                // 1. Card Shift - Full width
+                CurrentShiftWidget::class,
+                // 2. Card Produk Stats (Total Produk, Varian, Paket, Alert)
+                ProductStatsWidget::class,
+                // 3. Card Total Kategori, Produk, Stok
                 StatsOverview::class,
-                TransactionsChart::class,
+                // 4. Bagan Keuangan & Transaksi (sejajar)
                 FinancialRecordsChart::class,
+                TransactionsChart::class,
+                // 5. Peringatan Stok
+                LowStockAlertWidget::class,
+                // 6. Tren Profit & Grafik Penjualan (sejajar)
+                ProfitChartWidget::class,
+                SalesChartWidget::class,
+                // 7. Metode Pembayaran & Produk Terlaris (sejajar)
+                PaymentMethodChartWidget::class,
+                TopProductsWidget::class,
+                // 8. Ringkasan Pengeluaran
+                ExpenseSummaryWidget::class,
+                // 9. Top Performer
+                TopStaffWidget::class,
+                // 10. Paket Produk
+                BundleSummaryWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

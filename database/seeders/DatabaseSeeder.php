@@ -36,6 +36,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call(ShieldSeeder::class);
 
+        $this->call(VariantBundleDemoSeeder::class);
+
         foreach ($users as $userData) {
             $user = User::firstOrCreate(
                 ['email' => $userData['email']],
