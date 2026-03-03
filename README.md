@@ -27,6 +27,9 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 - **Expense Tracking**: Record operational expenses with categories (utilities, salaries, supplies, etc.)
 - **Shift Management**: Manage cashier shifts (morning/evening) with opening/closing cash tracking
 - **Staff Performance Report**: Track sales performance per cashier with transaction metrics
+- **Product Variants**: Manage product variations (size, color, flavor) with separate stock and pricing per variant
+- **Product Bundles**: Create product packages with special bundle pricing and auto-apply in POS
+- **Reorder Point Alerts**: Automatic low stock notifications with severity levels and dashboard widget
 
 ## Tech Stack
 
@@ -254,19 +257,35 @@ php artisan serve
 ```
 app/
 ├── Filament/           # Filament admin resources and pages
+│   ├── Resources/     # CRUD resources (Product, Category, Transaction, etc.)
+│   ├── Pages/         # Custom pages (POS, Reports, etc.)
+│   └── Widgets/       # Dashboard widgets (Sales Chart, Low Stock Alert, etc.)
 ├── Http/Controllers/   # API and web controllers
 ├── Livewire/          # Livewire components (POS, etc.)
 ├── Models/            # Eloquent models
+│   ├── Product.php
+│   ├── ProductVariant.php     # Product variations
+│   ├── ProductBundle.php      # Bundle headers
+│   ├── BundleItem.php         # Bundle line items
+│   ├── ReorderAlert.php       # Low stock alerts
+│   └── ...
 ├── Observers/         # Model observers
 └── Services/          # Business logic services
+    ├── VariantService.php     # Variant operations
+    ├── BundleService.php      # Bundle management
+    ├── ReorderPointService.php # Alert management
+    └── ...
 
 resources/
 ├── js/               # JavaScript (Bluetooth printer, etc.)
 ├── views/            # Blade templates
+│   ├── livewire/     # Livewire component views
+│   └── filament/     # Filament custom views
 └── css/              # Tailwind CSS
 
 database/
 ├── migrations/        # Database migrations
+├── factories/         # Model factories for testing
 └── seeders/          # Database seeders
 ```
 
@@ -371,6 +390,33 @@ Tracks cashier performance metrics:
 - `getAverageTransactionValue()` - Get average transaction value
 - `getItemsSoldByUser()` - Get total items sold by user
 - `getTopStaff()` - Get top performing staff with rankings
+
+### VariantService
+Manages product variant operations:
+- `createVariant()` - Create new product variant with SKU generation
+- `updateVariant()` - Update variant attributes, price, stock
+- `validateVariantData()` - Validate variant structure and uniqueness
+- `getAvailableVariants()` - Get variants available for sale
+- `calculateVariantPrice()` - Calculate price with variant adjustment
+- `adjustStock()` - Adjust stock for specific variant
+
+### BundleService
+Manages product bundle operations:
+- `createBundle()` - Create new product bundle
+- `validateBundle()` - Validate bundle items and pricing
+- `calculateBundlePrice()` - Calculate total vs bundle price
+- `checkBundleAvailability()` - Check if all items available
+- `autoApplyBundle()` - Auto-apply bundle in cart
+- `getActiveBundles()` - Get all active bundles
+
+### ReorderPointService
+Manages reorder point alerts:
+- `checkAndCreateAlerts()` - Check stock levels and create alerts
+- `createAlert()` - Create new reorder alert
+- `dismissAlert()` - Dismiss alert after reorder
+- `getActiveAlerts()` - Get active alerts with severity
+- `calculateSeverity()` - Determine alert severity level
+- `getProductsNeedingReorder()` - Get products below reorder point
 
 ## Troubleshooting
 

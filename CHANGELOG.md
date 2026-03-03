@@ -5,6 +5,100 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0] - 2026-03-03
+
+### Added
+
+#### Product Variants System
+- ProductVariant model for managing product variations (size, color, flavor, etc.)
+- Variant attributes stored as JSON for flexibility
+- Separate pricing per variant (base price + variant adjustment)
+- Separate stock tracking per variant
+- SKU generation with variant suffixes (e.g., TSHIRT-001-RED-L)
+- Variant selection modal in POS with stock availability
+- Transaction items track variant_id for detailed reporting
+- VariantService for variant operations and calculations
+
+#### Product Bundles System
+- ProductBundle model for creating product packages
+- BundleItem model for items within a bundle
+- Special bundle pricing (total lower than individual items)
+- Auto-apply bundle when all items present in cart
+- Bundle availability notification in POS
+- Bundle summary widget on dashboard
+- BundleService for bundle operations and validation
+
+#### Reorder Point Auto-Alert System
+- ReorderAlert model for low stock notifications
+- Per-product reorder point configuration (min/max stock)
+- Automatic alert creation when stock below reorder point
+- Alert severity levels: low, medium, high, critical
+- LowStockAlertWidget on dashboard with color-coded badges
+- ManageReorderAlerts page for viewing and dismissing alerts
+- Alert filtering by severity and product
+- ReorderPointService for alert management
+
+#### Dashboard Widgets Enhancement
+- LowStockAlertWidget - Real-time low stock notifications
+- BundleSummaryWidget - Active bundles overview
+- ProductStatsWidget - Product and variant statistics
+- Fixed widget permissions using existing Shield permissions
+- Optimized widget layout with proper columnSpan
+
+### Database Tables
+- `product_variants` - Product variation data with stock and pricing
+- `product_bundles` - Bundle headers with special pricing
+- `bundle_items` - Items included in bundles
+- `reorder_alerts` - Low stock alert records
+
+### Models
+- `ProductVariant` - Product variant with attributes, stock, pricing
+- `ProductBundle` - Bundle definition with items relationship
+- `BundleItem` - Bundle line items with quantity
+- `ReorderAlert` - Alert records with severity levels
+
+### Filament Resources
+- ProductVariantResource - Variant management with product linkage
+- ProductBundleResource - Bundle creation and management
+- Updated ProductResource - Added variant repeater for inline variant management
+
+### Filament Pages
+- ManageReorderAlerts - Alert management page with filtering
+
+### Services
+- `VariantService` - Variant operations, validation, stock management
+- `BundleService` - Bundle validation, price calculation, auto-apply logic
+- `ReorderPointService` - Alert creation, management, and auto-check
+
+### POS Integration
+- Variant selection modal when adding products with variants
+- Bundle auto-apply with visual notification
+- Variant stock display in product grid
+- Bundle pricing calculation in cart
+
+### Tests
+- VariantServiceTest (9 test cases) - Variant operations and validation
+- BundleServiceTest (12 test cases) - Bundle validation and calculations
+- ReorderPointServiceTest (6 test cases) - Alert logic and severity
+- ProductVariantTest (6 test cases) - Feature tests for variant CRUD
+- ProductBundleTest (4 test cases) - Feature tests for bundle CRUD
+- ReorderAlertTest (3 test cases) - Feature tests for alert management
+- PosVariantBundleTest (7 test cases) - POS integration tests
+
+### Factories & Seeders
+- ProductVariantFactory - Variant test data generation
+- ProductBundleFactory - Bundle test data generation
+- BundleItemFactory - Bundle item test data generation
+- ReorderAlertFactory - Alert test data generation
+- VariantBundleDemoSeeder - Demo data for variants and bundles
+
+### Changed
+- TransactionItem model: added variant_id column
+- Product model: added variants(), bundles(), reorderAlerts() relationships
+- Product model: added reorder_point, reorder_quantity, track_stock fields
+- POS component: integrated variant selection and bundle auto-apply
+- DatabaseSeeder: includes VariantBundleDemoSeeder
+
 ## [2.8.0] - 2026-03-01
 
 ### Added
@@ -563,6 +657,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 2.9.0 | 2026-03-03 | Product variants, product bundles, and reorder point alert system |
 | 2.8.0 | 2026-03-01 | Expense tracking, shift management, and staff performance reports |
 | 2.7.1 | 2026-03-01 | Bug fixes: null safety improvements, UI refinements, navigation fixes |
 | 2.7.0 | 2026-02-27 | Backup & restore system with automatic daily backups |
@@ -656,4 +751,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 │   ├── Transaction Count
 │   ├── Average Transaction Value
 │   └── Top Staff Rankings
+├── Product Variants
+│   ├── Variant Management
+│   ├── Separate Variant Pricing
+│   ├── Per-Variant Stock Tracking
+│   └── POS Variant Selection
+├── Product Bundles
+│   ├── Bundle Creation
+│   ├── Bundle Item Management
+│   ├── Special Bundle Pricing
+│   └── Auto-Apply in POS
+├── Reorder Alerts
+│   ├── Reorder Point Configuration
+│   ├── Auto-Alert Generation
+│   ├── Severity Levels
+│   └── Dashboard Low Stock Widget
 ```
