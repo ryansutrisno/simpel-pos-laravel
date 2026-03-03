@@ -1,5 +1,12 @@
 # Simpel POS
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-12.x-red?style=for-the-badge&logo=laravel" alt="Laravel">
+  <img src="https://img.shields.io/badge/PHP-8.2-blue?style=for-the-badge&logo=php" alt="PHP">
+  <img src="https://img.shields.io/badge/Filament-3.x-purple?style=for-the-badge" alt="Filament">
+  <img src="https://img.shields.io/badge/Tailwind-4.x-cyan?style=for-the-badge&logo=tailwindcss" alt="Tailwind">
+</p>
+
 A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, and Livewire 3.
 
 ## Features
