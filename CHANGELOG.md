@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-03-04
+
+### Added
+
+#### Bulk Import Products System
+- ProductImport class using Laravel Excel (maatwebsite/excel v3.1)
+- Excel template with heading row support (Indonesian column names)
+- Drag & drop file upload in Filament admin panel
+- Downloadable template file (product_import_template.xlsx)
+- Progress bar for tracking import progress
+- Validation per row with detailed error messages
+- Auto-generate SKU format: SKU-YYYYMMDD-XXXX
+- Auto-create category if not exists
+- Chunk processing for better performance (100 rows per batch)
+- Error handling with detailed message: "Baris {row}: {error_message}"
+- BulkImportProducts page in Filament under Manajemen Produk
+
+#### Database Changes
+- Added sku field to products table (unique, nullable)
+- Made category_id nullable in products table
+
+#### Command
+- `php artisan app:generate-product-import-template` - Generate template file
+
+### Changed
+- Product model: added sku to fillable array
+
+### Tests
+- BulkImportProductTest with 5 test cases
+
 ## [2.9.0] - 2026-03-03
 
 ### Added
@@ -657,6 +687,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 3.0.0 | 2026-03-04 | Bulk import products from Excel with drag & drop and validation |
 | 2.9.0 | 2026-03-03 | Product variants, product bundles, and reorder point alert system |
 | 2.8.0 | 2026-03-01 | Expense tracking, shift management, and staff performance reports |
 | 2.7.1 | 2026-03-01 | Bug fixes: null safety improvements, UI refinements, navigation fixes |

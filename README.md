@@ -37,6 +37,7 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 - **Product Variants**: Manage product variations (size, color, flavor) with separate stock and pricing per variant
 - **Product Bundles**: Create product packages with special bundle pricing and auto-apply in POS
 - **Reorder Point Alerts**: Automatic low stock notifications with severity levels and dashboard widget
+- **Bulk Import Products**: Import hundreds of products from Excel with drag & drop, template download, and validation
 
 ## Tech Stack
 

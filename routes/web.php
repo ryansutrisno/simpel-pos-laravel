@@ -17,3 +17,14 @@ Route::get('/admin/backups/download/{file}', function ($file) {
 
     return Storage::disk('backups')->download($path);
 })->name('backup.download')->middleware('auth');
+
+// Product import template download route
+Route::get('/admin/import-template/download', function () {
+    $path = storage_path('app/public/templates/product_import_template.xlsx');
+
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->download($path, 'template_import_produk.xlsx');
+})->name('import-template.download');
