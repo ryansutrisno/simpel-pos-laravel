@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2026-03-04
+## [2.10.0] - 2026-03-04
 
 ### Added
 
@@ -687,7 +687,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
-| 3.0.0 | 2026-03-04 | Bulk import products from Excel with drag & drop and validation |
+| 2.10.0 | 2026-03-04 | Bulk import products from Excel with drag & drop and validation |
 | 2.9.0 | 2026-03-03 | Product variants, product bundles, and reorder point alert system |
 | 2.8.0 | 2026-03-01 | Expense tracking, shift management, and staff performance reports |
 | 2.7.1 | 2026-03-01 | Bug fixes: null safety improvements, UI refinements, navigation fixes |
