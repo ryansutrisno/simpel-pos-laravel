@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Customer;
 use App\Models\CustomerPoint;
+use App\Models\MembershipTier;
 
 class PointService
 {
@@ -15,9 +16,15 @@ class PointService
 
     public const MAX_REDEEM_PERCENT = 50;
 
-    public function calculateEarnedPoints(float $amount): int
+    public function calculateEarnedPoints(float $amount, ?MembershipTier $tier = null): int
     {
-        return (int) floor($amount / self::EARN_RATE);
+        $basePoints = (int) floor($amount / self::EARN_RATE);
+
+        if (! $tier) {
+            return $basePoints;
+        }
+
+        return (int) floor($basePoints * $tier->multiplier);
     }
 
     public function calculateRedeemValue(int $points): float

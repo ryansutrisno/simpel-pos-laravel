@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.0] - 2026-03-05
+
+### Added
+
+#### Membership Tier System
+- MembershipTier model with customizable tiers
+- Three default tiers: Bronze (1.0x), Silver (1.5x), Gold (2.0x)
+- Point multiplier based on customer tier
+- Auto tier assignment based on total_spent
+- Auto tier recalculation after each transaction
+- Customizable tier benefits (JSON array)
+- Tier color picker in admin panel
+- Customer view shows tier and progress to next tier
+
+#### Database Changes
+- New membership_tiers table (name, slug, min_spent, multiplier, color, benefits, sort_order)
+- Added membership_tier_id foreign key to customers table
+
+#### Filament Resources
+- MembershipTierResource with CRUD operations
+- CustomerResource updated with tier selection
+- ViewCustomer page shows tier information and progress
+
+#### POS Integration
+- Points calculation uses tier multiplier
+- Customer tier loaded with membershipTier relationship
+- Tier recalculated after each transaction
+
 ## [2.10.0] - 2026-03-04
 
 ### Added

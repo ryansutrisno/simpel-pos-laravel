@@ -175,7 +175,7 @@ class Pos extends Component
 
     public function getSelectedCustomerProperty()
     {
-        return $this->selectedCustomerId ? Customer::find($this->selectedCustomerId) : null;
+        return $this->selectedCustomerId ? Customer::with('membershipTier')->find($this->selectedCustomerId) : null;
     }
 
     public function getCustomerPointsProperty(): int
@@ -343,7 +343,7 @@ class Pos extends Component
             return 0;
         }
 
-        return $this->pointService->calculateEarnedPoints($this->grandTotal);
+        return $this->pointService->calculateEarnedPoints($this->grandTotal, $this->selectedCustomer?->membershipTier);
     }
 
     public function updateQuantity($index, $action)
@@ -935,7 +935,7 @@ class Pos extends Component
                 $this->pointService->redeemPoints($this->selectedCustomer, $this->redeemPoints, $transaction->id);
             }
 
-            $pointsEarned = $this->pointService->calculateEarnedPoints($grandTotal);
+            $pointsEarned = $this->pointService->calculateEarnedPoints($grandTotal, $this->selectedCustomer?->membershipTier);
             if ($pointsEarned > 0) {
                 $this->pointService->earnPoints(
                     $this->selectedCustomer,
@@ -946,6 +946,7 @@ class Pos extends Component
             }
 
             $this->selectedCustomer->updateStats($grandTotal);
+            $this->selectedCustomer->recalculateTier();
             $transaction->update(['points_earned' => $pointsEarned]);
         }
 
@@ -1057,7 +1058,7 @@ class Pos extends Component
                 $this->pointService->redeemPoints($this->selectedCustomer, $this->redeemPoints, $transaction->id);
             }
 
-            $pointsEarned = $this->pointService->calculateEarnedPoints($grandTotal);
+            $pointsEarned = $this->pointService->calculateEarnedPoints($grandTotal, $this->selectedCustomer?->membershipTier);
             if ($pointsEarned > 0) {
                 $this->pointService->earnPoints(
                     $this->selectedCustomer,
@@ -1068,6 +1069,7 @@ class Pos extends Component
             }
 
             $this->selectedCustomer->updateStats($grandTotal);
+            $this->selectedCustomer->recalculateTier();
             $transaction->update(['points_earned' => $pointsEarned]);
         }
 
@@ -1171,7 +1173,7 @@ class Pos extends Component
                 $this->pointService->redeemPoints($this->selectedCustomer, $this->redeemPoints, $transaction->id);
             }
 
-            $pointsEarned = $this->pointService->calculateEarnedPoints($grandTotal);
+            $pointsEarned = $this->pointService->calculateEarnedPoints($grandTotal, $this->selectedCustomer?->membershipTier);
             if ($pointsEarned > 0) {
                 $this->pointService->earnPoints(
                     $this->selectedCustomer,
@@ -1182,6 +1184,7 @@ class Pos extends Component
             }
 
             $this->selectedCustomer->updateStats($grandTotal);
+            $this->selectedCustomer->recalculateTier();
             $transaction->update(['points_earned' => $pointsEarned]);
         }
 

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
+use App\Models\MembershipTier;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -52,6 +53,16 @@ class CustomerResource extends Resource
                     ])
                     ->columns(2),
 
+                Forms\Components\Section::make(' keanggotaan')
+                    ->schema([
+                        Forms\Components\Select::make('membership_tier_id')
+                            ->label('Tier Membership')
+                            ->options(MembershipTier::where('is_active', true)->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload(),
+                    ])
+                    ->visibleOn('create|edit'),
+
                 Forms\Components\Section::make('Statistik')
                     ->schema([
                         Forms\Components\TextInput::make('points')
@@ -96,6 +107,13 @@ class CustomerResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Telepon')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('tier_badge')
+                    ->label('Tier')
+                    ->html()
+                    ->state(fn (Customer $record): string => $record->membershipTier
+                        ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;font-size:12px;font-weight:500;background-color:'.$record->membershipTier->color.'20;color:'.$record->membershipTier->color.';">'.$record->membershipTier->name.'</span>'
+                        : '<span style="padding:2px 8px;border-radius:9999px;font-size:12px;background-color:#6b728020;color:#6b7280;">-</span>')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('points')
                     ->label('Poin')
                     ->badge()

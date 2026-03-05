@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Services\MembershipTierService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
@@ -20,6 +22,7 @@ class Customer extends Model
         'total_spent',
         'total_transactions',
         'is_active',
+        'membership_tier_id',
     ];
 
     protected function casts(): array
@@ -31,6 +34,11 @@ class Customer extends Model
             'total_transactions' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function membershipTier(): BelongsTo
+    {
+        return $this->belongsTo(MembershipTier::class, 'membership_tier_id');
     }
 
     public function pointsHistory(): HasMany
@@ -150,5 +158,17 @@ class Customer extends Model
     {
         $this->increment('total_transactions');
         $this->increment('total_spent', $transactionTotal);
+    }
+
+    public function recalculateTier(): ?MembershipTier
+    {
+        $tierService = app(MembershipTierService::class);
+        $newTier = $tierService->getTierForSpent((float) $this->total_spent);
+
+        if ($newTier && $newTier->id !== $this->membership_tier_id) {
+            $this->update(['membership_tier_id' => $newTier->id]);
+        }
+
+        return $newTier;
     }
 }

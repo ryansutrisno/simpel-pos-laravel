@@ -38,6 +38,7 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 - **Product Bundles**: Create product packages with special bundle pricing and auto-apply in POS
 - **Reorder Point Alerts**: Automatic low stock notifications with severity levels and dashboard widget
 - **Bulk Import Products**: Import hundreds of products from Excel with drag & drop, template download, and validation
+- **Membership Tier System**: Bronze/Silver/Gold tiers with point multipliers, auto tier assignment based on total spent
 
 ## Tech Stack
 
@@ -301,13 +302,23 @@ database/
 
 ### PointService
 Handles loyalty point calculations:
-- `calculateEarnedPoints($amount)` - Calculate points from transaction amount
+- `calculateEarnedPoints($amount, $tier)` - Calculate points from transaction amount with optional tier multiplier
 - `calculateRedeemValue($points)` - Calculate discount value from points
 - `getMaxRedeemablePoints($points, $total)` - Get max redeemable points
 - Earn rate: Rp 10.000 = 1 point
 - Redeem rate: 1 point = Rp 1.000
 - Minimum redeem: 10 points
 - Maximum redeem: 50% of transaction total
+
+### MembershipTierService
+Handles membership tier operations:
+- `getAllTiers()` - Get all active membership tiers
+- `getTierForSpent($totalSpent)` - Get tier based on customer total spent
+- `recalculateCustomerTier($customer)` - Recalculate and update customer tier
+- `getNextTier($customer)` - Get the next tier a customer can achieve
+- `getPointsToNextTier($customer)` - Calculate points/spend needed for next tier
+- `calculatePointsWithTier($amount, $tier)` - Calculate points with tier multiplier
+- `assignTierToAllCustomers()` - Bulk assign tiers to all existing customers
 
 ### DiscountService
 Handles discount calculations:
