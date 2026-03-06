@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.12.0] - 2026-03-06
+
+### Added
+
+#### Inventory Valuation Report
+- InventoryValuationService with FIFO, LIFO, and Weighted Average calculation methods
+- InventoryValuationReport page in Filament under Laporan menu
+- Reference date selection for valuation (e.g., end of year for tax reporting)
+- Category filtering for targeted reports
+- Summary cards showing total products, total quantity, and total inventory value
+- Detailed table with product, SKU, quantity, unit cost, and total value
+- Excel export functionality
+- Excludes products with 0 stock by default
+- Default method: Weighted Average
+
+#### Services
+- InventoryValuationService:
+  - `getInventoryValue($method, $referenceDate, $categoryId)` - Main method
+  - `getProductCost($product, $method, $referenceDate)` - Cost per product
+  - `getFIFOCost()` - First In First Out calculation
+  - `getLIFOCost()` - Last In First Out calculation
+  - `getWeightedAverageCost()` - Weighted Average calculation
+
+#### Exports
+- InventoryValuationExport for Excel download
+
 ## [2.11.0] - 2026-03-05
 
 ### Added

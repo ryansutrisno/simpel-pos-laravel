@@ -39,6 +39,7 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 - **Reorder Point Alerts**: Automatic low stock notifications with severity levels and dashboard widget
 - **Bulk Import Products**: Import hundreds of products from Excel with drag & drop, template download, and validation
 - **Membership Tier System**: Bronze/Silver/Gold tiers with point multipliers, auto tier assignment based on total spent
+- **Inventory Valuation Report**: Calculate inventory value for tax reporting with FIFO, LIFO, and Weighted Average methods
 
 ## Tech Stack
 
@@ -312,6 +313,16 @@ Handles loyalty point calculations:
 
 ### MembershipTierService
 Handles membership tier operations:
+
+### InventoryValuationService
+Handles inventory valuation calculations:
+- `getInventoryValue($method, $referenceDate, $categoryId)` - Get complete inventory valuation report
+- `getProductCost($product, $method, $referenceDate)` - Calculate cost per product
+- `getFIFOCost($product, $referenceDate)` - First In First Out cost method
+- `getLIFOCost($product, $referenceDate)` - Last In First Out cost method
+- `getWeightedAverageCost($product, $referenceDate)` - Weighted Average cost method (default)
+- Supports reference date selection (e.g., December 31 for tax reporting)
+- Excludes products with zero stock
 - `getAllTiers()` - Get all active membership tiers
 - `getTierForSpent($totalSpent)` - Get tier based on customer total spent
 - `recalculateCustomerTier($customer)` - Recalculate and update customer tier
