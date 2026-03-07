@@ -7,90 +7,22 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
-      - '.github/**'
 
   workflow_dispatch:
     inputs:
-      version_type:
-        description: 'Version bump type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-      release_notes:
-        description: 'Custom release notes (optional)'
+      dry_run:
+        description: 'Dry run (no actual release)'
         required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
-  check-release:
-    runs-on: ubuntu-latest
-    outputs:
-      should_release: ${{ steps.check.outputs.should_release }}
-      version_type: ${{ steps.check.outputs.version_type }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check if release is needed
-        id: check
-        run: |
-          # Get latest tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "Latest tag: $LATEST_TAG"
-          
-          # Get commits since last tag
-          if [ "$LATEST_TAG" = "v0.0.0" ]; then
-            COMMITS=$(git log --pretty=format:"%s" 2>/dev/null || echo "")
-          else
-            COMMITS=$(git log $LATEST_TAG..HEAD --pretty=format:"%s" 2>/dev/null || echo "")
-          fi
-          
-          echo "Commits since last tag:"
-          echo "$COMMITS"
-          
-          # Check for manual trigger
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manual trigger detected"
-            echo "should_release=true" >> $GITHUB_OUTPUT
-            echo "version_type=${{ github.event.inputs.version_type }}" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          # Analyze commits for auto release
-          VERSION_TYPE=""
-          
-          # Check for breaking changes (major)
-          if echo "$COMMITS" | grep -qE "^.!(\w|\s)|BREAKING CHANGE"; then
-            VERSION_TYPE="major"
-          # Check for features (minor)
-          elif echo "$COMMITS" | grep -qE "^feat(\(.+\))?:"; then
-            VERSION_TYPE="minor"
-          # Check for fixes (patch)
-          elif echo "$COMMITS" | grep -qE "^fix(\(.+\))?:"; then
-            VERSION_TYPE="patch"
-          fi
-          
-          if [ -n "$VERSION_TYPE" ]; then
-            echo "Release needed with version type: $VERSION_TYPE"
-            echo "should_release=true" >> $GITHUB_OUTPUT
-            echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
-          else
-            echo "No significant changes for release"
-            echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "version_type=" >> $GITHUB_OUTPUT
-          fi
-
-  create-release:
-    needs: check-release
-    if: needs.check-release.outputs.should_release == 'true'
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -99,157 +31,25 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          php-version: '8.2'
-          extensions: mbstring, xml, mysql, sqlite
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Get version info
-        id: version
-        run: |
-          # Get latest tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
-          
-          # Extract version numbers
-          VERSION=${LATEST_TAG#v}
-          MAJOR=$(echo $VERSION | cut -d. -f1)
-          MINOR=$(echo $VERSION | cut -d. -f2)
-          PATCH=$(echo $VERSION | cut -d. -f3)
-          
-          # Bump version based on type
-          VERSION_TYPE="${{ needs.check-release.outputs.version_type }}"
-          case $VERSION_TYPE in
-            major)
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              ;;
-            minor)
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              ;;
-            patch)
-              PATCH=$((PATCH + 1))
-              ;;
-          esac
-          
-          NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "New version will be: $NEW_VERSION"
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          LATEST_TAG="${{ steps.version.outputs.latest_tag }}"
-          NEW_VERSION="${{ steps.version.outputs.new_version }}"
-          
-          # Get commits since last tag
-          if [ "$LATEST_TAG" = "v0.0.0" ]; then
-            COMMITS=$(git log --pretty=format:"%s" 2>/dev/null || echo "")
-          else
-            COMMITS=$(git log $LATEST_TAG..HEAD --pretty=format:"%s" 2>/dev/null || echo "")
-          fi
-          
-          # Initialize changelog sections
-          FEATURES=""
-          FIXES=""
-          DOCS=""
-          REFACTOR=""
-          CHORE=""
-          BREAKING=""
-          
-          # Categorize commits
-          while IFS= read -r commit; do
-            # Check for breaking changes
-            if echo "$commit" | grep -qE "^.!|BREAKING CHANGE"; then
-              BREAKING="$BREAKING- $commit\n"
-            # Features
-            elif echo "$commit" | grep -qE "^feat(\(.+\))?:"; then
-              FEATURES="$FEATURES- $commit\n"
-            # Fixes
-            elif echo "$commit" | grep -qE "^fix(\(.+\))?:"; then
-              FIXES="$FIXES- $commit\n"
-            # Docs
-            elif echo "$commit" | grep -qE "^docs(\(.+\))?:"; then
-              DOCS="$DOCS- $commit\n"
-            # Refactor
-            elif echo "$commit" | grep -qE "^refactor(\(.+\))?:"; then
-              REFACTOR="$REFACTOR- $commit\n"
-            # Chore
-            elif echo "$commit" | grep -qE "^chore(\(.+\))?:"; then
-              CHORE="$CHORE- $commit\n"
-            fi
-          done <<< "$COMMITS"
-          
-          # Build changelog
-          CHANGELOG="## What's Changed\n\n"
-          
-          if [ -n "$BREAKING" ]; then
-            CHANGELOG="$CHANGELOG### 💥 Breaking Changes\n$BREAKING\n"
-          fi
-          
-          if [ -n "$FEATURES" ]; then
-            CHANGELOG="$CHANGELOG### ✨ Features\n$FEATURES\n"
-          fi
-          
-          if [ -n "$FIXES" ]; then
-            CHANGELOG="$CHANGELOG### 🐛 Bug Fixes\n$FIXES\n"
-          fi
-          
-          if [ -n "$DOCS" ]; then
-            CHANGELOG="$CHANGELOG### 📚 Documentation\n$DOCS\n"
-          fi
-          
-          if [ -n "$REFACTOR" ]; then
-            CHANGELOG="$CHANGELOG### ♻️ Refactoring\n$REFACTOR\n"
-          fi
-          
-          if [ -n "$CHORE" ]; then
-            CHANGELOG="$CHANGELOG### 🔧 Maintenance\n$CHORE\n"
-          fi
-          
-          # Add compare link
-          if [ "$LATEST_TAG" != "v0.0.0" ]; then
-            CHANGELOG="$CHANGELOG**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LATEST_TAG...$NEW_VERSION\n"
-          fi
-          
-          # Add custom release notes if provided
-          if [ -n "${{ github.event.inputs.release_notes }}" ]; then
-            CHANGELOG="$CHANGELOG\n### 📝 Release Notes\n${{ github.event.inputs.release_notes }}\n"
-          fi
-          
-          # Save changelog to file for multiline output
-          echo -e "$CHANGELOG" > changelog.txt
-          echo "changelog_file=changelog.txt" >> $GITHUB_OUTPUT
-
-      - name: Create and push tag
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          NEW_VERSION="${{ steps.version.outputs.new_version }}"
-          git tag -a $NEW_VERSION -m "Release $NEW_VERSION"
-          git push origin $NEW_VERSION
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.new_version }}
-          name: Release ${{ steps.version.outputs.new_version }}
-          body_path: changelog.txt
-          draft: false
-          prerelease: false
+      - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release ${{ github.event.inputs.dry_run && '--dry-run' || '' }}
 
       - name: Summary
+        if: success()
         run: |
-          echo "## Release Created! 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "## Release Process Complete! 🎉" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Version**: ${{ steps.version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Previous**: ${{ steps.version.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Type**: ${{ needs.check-release.outputs.version_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "Semantic Release telah memproses commits dan membuat release jika ada perubahan signifikan." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[View Release](https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.new_version }})" >> $GITHUB_STEP_SUMMARY
+          echo "Cek [Releases](../../releases) untuk melihat hasil." >> $GITHUB_STEP_SUMMARY

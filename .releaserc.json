@@ -1,0 +1,59 @@
+{
+    "branches": ["main"],
+    "plugins": [
+        [
+            "@semantic-release/commit-analyzer",
+            {
+                "preset": "conventionalcommits",
+                "releaseRules": [
+                    { "type": "feat", "release": "minor" },
+                    { "type": "fix", "release": "patch" },
+                    { "type": "docs", "release": "patch" },
+                    { "type": "refactor", "release": "patch" },
+                    { "type": "chore", "release": "patch" },
+                    { "type": "style", "release": false },
+                    { "type": "test", "release": false },
+                    { "breaking": true, "release": "major" }
+                ]
+            }
+        ],
+        [
+            "@semantic-release/release-notes-generator",
+            {
+                "preset": "conventionalcommits",
+                "presetConfig": {
+                    "types": [
+                        { "type": "feat", "section": "✨ Features" },
+                        { "type": "fix", "section": "🐛 Bug Fixes" },
+                        { "type": "docs", "section": "📚 Documentation" },
+                        { "type": "refactor", "section": "♻️ Refactoring" },
+                        { "type": "chore", "section": "🔧 Maintenance" },
+                        { "type": "style", "section": "💎 Styles", "hidden": true },
+                        { "type": "test", "section": "🚨 Tests", "hidden": true },
+                        { "type": "perf", "section": "⚡ Performance" },
+                        { "type": "ci", "section": "🔁 CI/CD", "hidden": true }
+                    ]
+                }
+            }
+        ],
+        [
+            "@semantic-release/changelog",
+            {
+                "changelogFile": "CHANGELOG.md"
+            }
+        ],
+        [
+            "@semantic-release/github",
+            {
+                "assets": []
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "assets": ["CHANGELOG.md"],
+                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+            }
+        ]
+    ]
+}
