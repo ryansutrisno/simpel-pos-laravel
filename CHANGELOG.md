@@ -1,3 +1,12 @@
+## [2.14.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.14.0...v2.14.1) (2026-03-07)
+
+
+### 📚 Documentation
+
+* add Payment Gateway feature to README ([09cb93d](https://github.com/ryansutrisno/simple-pos-laravel/commit/09cb93db50f199d755f096418d884f7ad9b8f7d4))
+* update PaymentGatewayService documentation ([4d8c511](https://github.com/ryansutrisno/simple-pos-laravel/commit/4d8c5116c96dd17db69310f4beb10c9020e71ed5))
+* update README clone command and improve top-staff widget styling ([edaa1c9](https://github.com/ryansutrisno/simple-pos-laravel/commit/edaa1c902395553ad9c620b4158301ab029ca885))
+
 ## [2.14.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.13.2...v2.14.0) (2026-03-07)
 
 
