@@ -87,6 +87,11 @@ class Product extends Model
         return $this->hasMany(BundleItem::class);
     }
 
+    public function purchaseOrderItems(): HasMany
+    {
+        return $this->hasMany(PurchaseOrderItem::class);
+    }
+
     public function reorderAlerts(): HasMany
     {
         return $this->hasMany(ReorderAlert::class);

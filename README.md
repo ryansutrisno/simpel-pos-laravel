@@ -40,6 +40,7 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 - **Bulk Import Products**: Import hundreds of products from Excel with drag & drop, template download, and validation
 - **Membership Tier System**: Bronze/Silver/Gold tiers with point multipliers, auto tier assignment based on total spent
 - **Inventory Valuation Report**: Calculate inventory value for tax reporting with FIFO, LIFO, and Weighted Average methods
+- **Purchase Price History**: Track purchase price changes over time with trends and supplier filtering
 
 ## Tech Stack
 
@@ -316,6 +317,15 @@ Handles membership tier operations:
 
 ### InventoryValuationService
 Handles inventory valuation calculations:
+
+### PurchasePriceHistoryService
+Handles purchase price history tracking:
+- `getPriceHistory($productId, $supplierId, $startDate, $endDate)` - Get price history with filters
+- `getPriceTrend($productId, $supplierId)` - Get monthly price trends
+- `getLatestPrice($productId, $supplierId)` - Get most recent purchase price
+- `getProductsWithHistory()` - Get products with purchase history
+- `getSuppliersWithHistory()` - Get suppliers with purchase history
+- Shows historical prices from received purchase orders
 - `getInventoryValue($method, $referenceDate, $categoryId)` - Get complete inventory valuation report
 - `getProductCost($product, $method, $referenceDate)` - Calculate cost per product
 - `getFIFOCost($product, $referenceDate)` - First In First Out cost method
