@@ -65,7 +65,7 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url> simple-pos
+   git clone <repository-url> simpel-pos
    cd simpel-pos
    ```
 
