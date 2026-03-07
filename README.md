@@ -41,6 +41,7 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 - **Membership Tier System**: Bronze/Silver/Gold tiers with point multipliers, auto tier assignment based on total spent
 - **Inventory Valuation Report**: Calculate inventory value for tax reporting with FIFO, LIFO, and Weighted Average methods
 - **Purchase Price History**: Track purchase price changes over time with trends and supplier filtering
+- **Payment Gateway Integration**: Accept digital payments via Mayar (QRIS, Invoice) with real-time status updates and webhook support
 
 ## Tech Stack
 
@@ -457,6 +458,17 @@ Manages reorder point alerts:
 - `getActiveAlerts()` - Get active alerts with severity
 - `calculateSeverity()` - Determine alert severity level
 - `getProductsNeedingReorder()` - Get products below reorder point
+
+### PaymentGatewayService
+Manages digital payment processing:
+- `initiatePayment()` - Generate QRIS or Invoice payment
+- `checkPaymentStatus()` - Check payment status (pending/paid/expired)
+- `handleWebhook()` - Process payment gateway webhooks
+- `cancelPayment()` - Cancel pending payment
+- Supports multiple payment providers (Mayar, Midtrans, Xendit, Tripay)
+- Payment methods: QRIS (dynamic), Invoice (link)
+- Real-time status updates via polling
+- Automatic transaction status update on payment success
 
 ## Troubleshooting
 
