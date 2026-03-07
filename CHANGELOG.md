@@ -1,3 +1,10 @@
+## [2.13.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.13.0...v2.13.1) (2026-03-07)
+
+
+### 🔧 Maintenance
+
+* setup semantic-release with commit links support ([0a92b0a](https://github.com/ryansutrisno/simple-pos-laravel/commit/0a92b0a4c017700c7196daebc2c799a0f7e1db82))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
