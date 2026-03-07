@@ -1,3 +1,10 @@
+## [2.13.2](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.13.1...v2.13.2) (2026-03-07)
+
+
+### 🐛 Bug Fixes
+
+* **receipt-template:** fix menu visibility and add preview functionality ([8b13e41](https://github.com/ryansutrisno/simple-pos-laravel/commit/8b13e41b9d7a8b676972983dc1ee551ead51b322))
+
 ## [2.13.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.13.0...v2.13.1) (2026-03-07)
 
 
