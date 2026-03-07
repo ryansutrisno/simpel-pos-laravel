@@ -465,10 +465,12 @@ Manages digital payment processing:
 - `checkPaymentStatus()` - Check payment status (pending/paid/expired)
 - `handleWebhook()` - Process payment gateway webhooks
 - `cancelPayment()` - Cancel pending payment
-- Supports multiple payment providers (Mayar, Midtrans, Xendit, Tripay)
+- Supports payment providers: Mayar (active), Midtrans (planned)
 - Payment methods: QRIS (dynamic), Invoice (link)
 - Real-time status updates via polling
 - Automatic transaction status update on payment success
+- Webhook handling for payment callbacks
+- Sandbox mode support for testing
 
 ## Troubleshooting
 
