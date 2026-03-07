@@ -6,10 +6,10 @@ use App\Filament\Resources\ReceiptTemplateResource\Pages;
 use App\Models\ReceiptTemplate;
 use App\Models\Store;
 use Filament\Forms;
-use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Forms\Components\Section;
 use Filament\Notifications\Notification;
+use Filament\Resources\Resource;
+use Filament\Tables;
 use Illuminate\Support\Facades\Auth;
 
 class ReceiptTemplateResource extends Resource
@@ -17,10 +17,14 @@ class ReceiptTemplateResource extends Resource
     protected static ?string $model = ReceiptTemplate::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
-    protected static ?string $navigationLabel = 'Receipt Templates';
+
+    protected static ?string $navigationLabel = 'Template Receipt';
+
     protected static ?string $modelLabel = 'receipt template';
+
     protected static ?string $pluralModelLabel = 'receipt templates';
-    protected static ?string $navigationGroup = 'Store Management';
+
+    protected static ?string $navigationGroup = 'Pengaturan';
 
     public static function form(Forms\Form $form): Forms\Form
     {
@@ -242,16 +246,16 @@ class ReceiptTemplateResource extends Resource
                 Tables\Actions\EditAction::make()
                     ->mutateFormDataUsing(function (array $data): array {
                         // Validate template data before saving
-                        $templateService = new \App\Services\ReceiptTemplateService();
+                        $templateService = new \App\Services\ReceiptTemplateService;
                         $errors = $templateService->validateTemplateData($data['template_data'] ?? []);
 
-                        if (!empty($errors)) {
+                        if (! empty($errors)) {
                             Notification::make()
                                 ->title('Template Validation Failed')
                                 ->body(implode('<br>', $errors))
                                 ->danger()
                                 ->send();
-                            
+
                             throw new \Exception('Template validation failed');
                         }
 
@@ -261,9 +265,8 @@ class ReceiptTemplateResource extends Resource
                     ->label('Preview')
                     ->icon('heroicon-m-eye')
                     ->color('info')
-                    ->url(fn (ReceiptTemplate $record): string => 
-                        route('filament.admin.resources.receipt-templates.preview', $record)
-                    ),
+                    ->url(fn (ReceiptTemplate $record): string => static::getUrl('preview', ['record' => $record->getRouteKey()]))
+                    ->openUrlInNewTab(),
                 Tables\Actions\DeleteAction::make()
                     ->before(function (ReceiptTemplate $record) {
                         if ($record->is_default) {
@@ -272,7 +275,7 @@ class ReceiptTemplateResource extends Resource
                                 ->body('Please set another template as default before deleting this one.')
                                 ->danger()
                                 ->send();
-                            
+
                             return false;
                         }
                     }),
@@ -288,7 +291,7 @@ class ReceiptTemplateResource extends Resource
                                         ->body('One or more selected templates are default templates.')
                                         ->danger()
                                         ->send();
-                                    
+
                                     return false;
                                 }
                             }
@@ -312,11 +315,12 @@ class ReceiptTemplateResource extends Resource
             'create' => Pages\CreateReceiptTemplate::route('/create'),
             'edit' => Pages\EditReceiptTemplate::route('/{record}/edit'),
             'view' => Pages\ViewReceiptTemplate::route('/{record}'),
+            'preview' => Pages\PreviewReceiptTemplate::route('/{record}/preview'),
         ];
     }
 
     public static function canViewAny(): bool
     {
-        return Auth::user()->can('manage-receipt-templates');
+        return Auth::user()->can('view_any_receipt::template');
     }
 }
