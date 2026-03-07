@@ -21,6 +21,12 @@ class Transaction extends Model
         'discount_amount',
         'voucher_code',
         'payment_method',
+        'payment_gateway_provider',
+        'payment_gateway_reference',
+        'payment_gateway_transaction_id',
+        'payment_gateway_status',
+        'payment_gateway_expires_at',
+        'paid_at',
         'cash_amount',
         'change_amount',
         'points_earned',
@@ -51,6 +57,8 @@ class Transaction extends Model
             'tax_amount' => 'decimal:2',
             'tax_rate' => 'decimal:2',
             'tax_enabled' => 'boolean',
+            'payment_gateway_expires_at' => 'datetime',
+            'paid_at' => 'datetime',
         ];
     }
 

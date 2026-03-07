@@ -358,7 +358,10 @@
                         class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                         <option value="cash">Tunai</option>
                         <option value="transfer">Transfer Bank</option>
-                        <option value="qris">QRIS</option>
+                        <option value="qris">QRIS Statis</option>
+                        @if($store?->payment_gateway_enabled)
+                        <option value="digital">QRIS/Invoice Digital</option>
+                        @endif
                     </select>
                 </div>
                 <!-- Ringkasan Pembayaran -->
@@ -464,11 +467,10 @@
                         <span wire:loading wire:target="checkout">Memproses...</span>
                     </button>
                 </div>
-                @endif
             </div>
         </div>
-    </div>
-        <!-- Variant Selection Modal -->
+    @endif
+    <!-- Variant Selection Modal -->
     @if($showVariantModal)
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl max-h-[80vh] overflow-hidden flex flex-col">
@@ -769,7 +771,7 @@
             </div>
         </div>
     </div>
-                @endif
+    @endif
     <!-- JavaScript untuk Bluetooth Printer & Barcode -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -813,3 +815,179 @@
             }
         });
     </script>
+
+    <!-- Payment Gateway Modal -->
+    <div x-data="paymentModal()" x-show="isOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 overflow-y-auto"
+        @show-payment-modal.window="openModal($event.detail)" style="display: none;">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity"
+                @click="closeModal()"></div>
+
+            <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        <span x-text="paymentMethod === 'qris' ? 'Pembayaran QRIS' : 'Pembayaran Invoice'"></span>
+                    </h3>
+                    <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Amount -->
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Jumlah Pembayaran</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white" x-text="formatCurrency(amount)"></p>
+                    </div>
+
+                    <!-- QRIS Display -->
+                    <div x-show="paymentMethod === 'qris'" class="flex flex-col items-center space-y-4">
+                        <div x-show="qrImageUrl" class="bg-white p-4 rounded-lg border">
+                            <img :src="qrImageUrl" alt="QRIS Code" class="w-64 h-64 mx-auto">
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
+                            Scan QRIS di atas menggunakan aplikasi pembayaran favorit Anda
+                        </p>
+                    </div>
+
+                    <!-- Invoice Display -->
+                    <div x-show="paymentMethod === 'invoice'" class="space-y-4">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                            <p class="text-sm text-blue-800 dark:text-blue-200 mb-2">Link Pembayaran:</p>
+                            <a :href="paymentUrl" target="_blank" class="text-blue-600 dark:text-blue-400 underline break-all">
+                                <span x-text="paymentUrl"></span>
+                            </a>
+                        </div>
+                        <button @click="copyPaymentUrl()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Salin Link Pembayaran
+                        </button>
+                    </div>
+
+                    <!-- Expiry Timer -->
+                    <div x-show="expiresAt" class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+                        <p class="text-sm text-yellow-800 dark:text-yellow-200 text-center">
+                            <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Berlaku hingga: <span x-text="formatExpiry(expiresAt)"></span>
+                        </p>
+                    </div>
+
+                    <!-- Payment Status -->
+                    <div class="flex items-center justify-center space-x-2">
+                        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Menunggu pembayaran...</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-3">
+                    <button @click="checkPaymentStatus()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        Cek Status
+                    </button>
+                    <button @click="closeModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function paymentModal() {
+            return {
+                isOpen: false,
+                transactionId: null,
+                paymentMethod: 'qris',
+                qrImageUrl: null,
+                paymentUrl: null,
+                amount: 0,
+                reference: null,
+                expiresAt: null,
+                pollInterval: null,
+
+                openModal(data) {
+                    this.transactionId = data.transaction_id;
+                    this.paymentMethod = data.payment_method || 'qris';
+                    this.qrImageUrl = data.qr_image_url;
+                    this.paymentUrl = data.payment_url;
+                    this.amount = data.amount;
+                    this.reference = data.reference;
+                    this.expiresAt = data.expires_at;
+                    this.isOpen = true;
+
+                    // Start polling for payment status
+                    this.startPolling();
+                },
+
+                closeModal() {
+                    this.isOpen = false;
+                    this.stopPolling();
+                },
+
+                startPolling() {
+                    this.pollInterval = setInterval(() => {
+                        this.checkPaymentStatus();
+                    }, 5000); // Check every 5 seconds
+                },
+
+                stopPolling() {
+                    if (this.pollInterval) {
+                        clearInterval(this.pollInterval);
+                        this.pollInterval = null;
+                    }
+                },
+
+                async checkPaymentStatus() {
+                    try {
+                        const response = await fetch(`/payment/status/${this.transactionId}`);
+                        const data = await response.json();
+
+                        if (data.success && data.status === 'paid') {
+                            this.stopPolling();
+                            this.isOpen = false;
+                            @this.call('onDigitalPaymentSuccess', this.transactionId);
+                        }
+                    } catch (error) {
+                        console.error('Failed to check payment status:', error);
+                    }
+                },
+
+                copyPaymentUrl() {
+                    navigator.clipboard.writeText(this.paymentUrl);
+                    alert('Link pembayaran berhasil disalin!');
+                },
+
+                formatCurrency(amount) {
+                    return new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 0,
+                    }).format(amount);
+                },
+
+                formatExpiry(timestamp) {
+                    if (!timestamp) return '-';
+                    const date = new Date(timestamp * 1000);
+                    return date.toLocaleString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    });
+                },
+            };
+        }
+    </script>
+
+    <!-- Payment Modal disabled - using direct API call instead -->
+    {{-- <livewire:payment-modal /> --}}
+</div>

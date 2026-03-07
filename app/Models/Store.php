@@ -33,6 +33,12 @@ class Store extends Model
         'tax_enabled',
         'tax_rate',
         'tax_name',
+        // Payment Gateway fields
+        'payment_gateway_enabled',
+        'payment_gateway_provider',
+        'payment_gateway_sandbox',
+        'payment_config',
+        'payment_enabled_methods',
     ];
 
     protected function casts(): array
@@ -47,6 +53,10 @@ class Store extends Model
             'store_credit_never_expires' => 'boolean',
             'tax_enabled' => 'boolean',
             'tax_rate' => 'decimal:2',
+            'payment_gateway_enabled' => 'boolean',
+            'payment_gateway_sandbox' => 'boolean',
+            'payment_config' => 'array',
+            'payment_enabled_methods' => 'array',
         ];
     }
 
@@ -58,6 +68,18 @@ class Store extends Model
     public function activeReceiptTemplate(): BelongsTo
     {
         return $this->belongsTo(ReceiptTemplate::class, 'receipt_template_id');
+    }
+
+    public function paymentGatewayConfig(): HasMany
+    {
+        return $this->hasMany(PaymentGatewayConfig::class);
+    }
+
+    public function activePaymentGatewayConfig(): ?PaymentGatewayConfig
+    {
+        return $this->paymentGatewayConfig()
+            ->where('is_active', true)
+            ->first();
     }
 
     public function getLogoUrlAttribute(): ?string

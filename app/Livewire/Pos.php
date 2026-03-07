@@ -20,6 +20,7 @@ use App\Services\TaxService;
 use App\Services\VariantService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -105,7 +106,7 @@ class Pos extends Component
 
     protected TaxService $taxService;
 
-    protected $listeners = ['barcode-scanned' => 'processBarcode'];
+    protected $listeners = ['barcode-scanned' => 'processBarcode', 'paymentSuccess' => 'onDigitalPaymentSuccess'];
 
     protected BundleService $bundleService;
 
@@ -863,6 +864,13 @@ class Pos extends Component
             return;
         }
 
+        // Handle digital payment (QRIS/Invoice) - create pending transaction
+        if ($this->paymentMethod === 'digital') {
+            $this->handleDigitalPayment();
+
+            return;
+        }
+
         $subtotalBeforeDiscount = $this->getSubtotalBeforeDiscount();
         $subtotalAfterProductDiscount = $this->getSubtotal();
         $globalDiscountAmount = $this->getGlobalDiscountAmount();
@@ -1236,13 +1244,191 @@ class Pos extends Component
         });
     }
 
-    protected function getPaymentMethodLabel(string $method): string
+    public function initiateDigitalPayment(): void
     {
-        return match ($method) {
-            'cash' => 'Tunai',
-            'transfer' => 'Transfer Bank',
-            'qris' => 'QRIS',
-            default => $method,
-        };
+        if (empty($this->cart)) {
+            Notification::make()
+                ->title('Keranjang kosong')
+                ->body('Tidak ada item yang bisa dibayar.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $transaction = $this->createPendingTransaction();
+
+        if ($transaction) {
+            $this->dispatch('openPaymentModal', [
+                'transactionId' => $transaction->id,
+                'method' => 'qris',
+            ]);
+        }
+    }
+
+    protected function createPendingTransaction(): ?Transaction
+    {
+        try {
+            $subtotal = $this->getSubtotalBeforeDiscount();
+            $discountAmount = $this->discountAmount;
+            $total = $this->getTotal();
+
+            $transaction = Transaction::create([
+                'user_id' => Auth::id(),
+                'customer_id' => $this->customerId ?: null,
+                'total' => $total,
+                'subtotal_before_discount' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'voucher_code' => $this->voucherCode ?: null,
+                'payment_method' => 'digital',
+                'payment_gateway_status' => 'pending',
+                'is_split' => false,
+                'subtotal_before_tax' => $this->getSubtotalBeforeTax(),
+                'tax_amount' => $this->getTaxAmount(),
+                'tax_rate' => $this->getTaxRate(),
+                'tax_enabled' => $this->isTaxEnabled(),
+            ]);
+
+            foreach ($this->cart as $item) {
+                $transaction->items()->create([
+                    'product_id' => $item['product_id'],
+                    'product_name' => $item['name'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'subtotal' => $item['price'] * $item['quantity'],
+                ]);
+            }
+
+            return $transaction;
+        } catch (\Exception $e) {
+            Log::error('Failed to create pending transaction', [
+                'error' => $e->getMessage(),
+            ]);
+
+            Notification::make()
+                ->title('Gagal membuat transaksi')
+                ->body('Terjadi kesalahan saat membuat transaksi.')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+    }
+
+    /**
+     * Handle digital payment - create pending transaction and open payment modal.
+     */
+    protected function handleDigitalPayment(): void
+    {
+        try {
+            $subtotal = $this->getSubtotalBeforeDiscount();
+            $discountAmount = $this->getProductDiscountAmount() + $this->getGlobalDiscountAmount()
+                + $this->getVoucherDiscountAmount() + ($this->bundleDiscount ?? 0);
+            $total = $this->grandTotal;
+
+            $shift = ShiftService::getActiveShift(Auth::id());
+
+            $transaction = Transaction::create([
+                'user_id' => Auth::id(),
+                'shift_id' => $shift?->id,
+                'customer_id' => $this->selectedCustomerId ?: null,
+                'discount_id' => $this->appliedVoucher?->id,
+                'total' => $total,
+                'subtotal_before_discount' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'voucher_code' => $this->appliedVoucher?->code,
+                'payment_method' => 'digital',
+                'payment_gateway_status' => 'pending',
+                'is_split' => false,
+                'subtotal_before_tax' => $subtotal - $discountAmount,
+                'tax_amount' => $this->taxAmount ?? 0,
+                'tax_rate' => $this->taxEnabled ? ($this->store?->tax_rate ?? 0) : 0,
+                'tax_enabled' => $this->taxEnabled ?? false,
+            ]);
+
+            // Create transaction items
+            foreach ($this->cart as $item) {
+                $transaction->items()->create([
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'] ?? null,
+                    'product_name' => $item['name'],
+                    'quantity' => $item['quantity'],
+                    'purchase_price' => $item['purchase_price'],
+                    'selling_price' => $item['final_price'] ?? $item['selling_price'],
+                    'original_price' => $item['original_price'] ?? $item['selling_price'],
+                    'discount_amount' => ($item['discount_amount'] ?? 0) + ($item['bundle_discount'] ?? 0),
+                    'discount_id' => $item['discount_id'] ?? null,
+                    'profit' => $item['profit'],
+                    'subtotal' => ($item['final_price'] ?? $item['selling_price']) * $item['quantity'],
+                ]);
+            }
+
+            // Initiate payment via PaymentController
+            $paymentController = app(\App\Http\Controllers\PaymentController::class);
+            $paymentRequest = new \Illuminate\Http\Request(['method' => 'qris']);
+            $response = $paymentController->initiatePayment($paymentRequest, $transaction);
+            $result = $response->getData(true);
+
+            if ($result['success'] ?? false) {
+                // Determine payment method (qris or invoice)
+                $paymentMethod = $result['payment_url'] ?? null ? 'invoice' : 'qris';
+
+                // Dispatch event to show payment modal
+                $this->dispatch('showPaymentModal', [
+                    'transaction_id' => $transaction->id,
+                    'payment_method' => $paymentMethod,
+                    'qr_image_url' => $result['qr_image_url'] ?? null,
+                    'payment_url' => $result['payment_url'] ?? null,
+                    'amount' => $result['amount'] ?? $transaction->total,
+                    'reference' => $result['reference'] ?? null,
+                    'expires_at' => $result['expires_at'] ?? null,
+                ]);
+
+                // Update transaction with payment gateway details
+                $transaction->update([
+                    'payment_gateway_reference' => $result['reference'] ?? null,
+                    'payment_gateway_transaction_id' => $result['transaction_id'] ?? null,
+                    'payment_gateway_expires_at' => isset($result['expires_at'])
+                        ? now()->setTimestamp($result['expires_at'] / 1000)
+                        : now()->addHours(24),
+                ]);
+            } else {
+                throw new \Exception($result['error'] ?? 'Failed to initiate payment');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Failed to handle digital payment', [
+                'error' => $e->getMessage(),
+            ]);
+
+            Notification::make()
+                ->title('Gagal Memproses Pembayaran Digital')
+                ->body('Terjadi kesalahan: '.$e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+
+    public function onDigitalPaymentSuccess(int $transactionId): void
+    {
+        $transaction = Transaction::find($transactionId);
+
+        if ($transaction) {
+            $this->lastTransactionId = $transactionId;
+            $this->cart = [];
+            $this->customerId = null;
+            $this->voucherCode = null;
+            $this->discountAmount = 0;
+            $this->showSuccessModal = true;
+            $this->showCart = true;
+
+            Notification::make()
+                ->title('Pembayaran Berhasil')
+                ->body('Transaksi telah berhasil dibayar.')
+                ->success()
+                ->send();
+
+            $this->dispatch('printReceipt', $transactionId);
+        }
     }
 }

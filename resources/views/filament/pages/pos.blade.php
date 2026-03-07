@@ -1,3 +1,3 @@
-<x-filament-panels::page>
+<div>
     <livewire:pos />
-</x-filament-panels::page>
+</div>

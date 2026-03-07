@@ -39,7 +39,9 @@ class SplitBill extends Model
             'cash' => 'Tunai',
             'transfer' => 'Transfer Bank',
             'qris' => 'QRIS',
-            default => $this->payment_method,
+            'digital' => 'Digital',
+            'invoice' => 'Invoice',
+            default => ucfirst($this->payment_method),
         };
     }
 }

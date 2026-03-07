@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
+use App\Http\Middleware\VerifyMayarWebhook;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -28,3 +30,18 @@ Route::get('/admin/import-template/download', function () {
 
     return response()->download($path, 'template_import_produk.xlsx');
 })->name('import-template.download');
+
+// Payment Gateway Webhook Routes
+Route::post('/webhook/mayar', [PaymentController::class, 'handleMayarWebhook'])
+    ->name('payment.webhook.mayar')
+    ->middleware(VerifyMayarWebhook::class);
+
+// Payment Gateway API Routes
+Route::prefix('payment')->group(function () {
+    Route::post('/initiate/{transaction}', [PaymentController::class, 'initiatePayment'])
+        ->name('payment.initiate');
+    Route::get('/status/{transaction}', [PaymentController::class, 'checkStatus'])
+        ->name('payment.status');
+    Route::get('/callback/{provider}', [PaymentController::class, 'handleCallback'])
+        ->name('payment.callback');
+});

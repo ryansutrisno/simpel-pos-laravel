@@ -205,11 +205,21 @@ class TransactionResource extends Resource
                         'cash' => 'success',
                         'transfer' => 'info',
                         'qris' => 'warning',
+                        'digital' => 'primary',
+                        'invoice' => 'primary',
+                        'multi' => 'gray',
+                        'split' => 'gray',
+                        default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'cash' => 'Tunai',
                         'transfer' => 'Transfer',
                         'qris' => 'QRIS',
+                        'digital' => 'Digital',
+                        'invoice' => 'Invoice',
+                        'multi' => 'Multi',
+                        'split' => 'Split',
+                        default => ucfirst($state),
                     }),
             ])
             ->defaultSort('created_at', 'desc')
