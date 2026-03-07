@@ -1,3 +1,10 @@
+## [2.14.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.13.2...v2.14.0) (2026-03-07)
+
+
+### ✨ Features
+
+* implement Mayar payment gateway integration ([474a9ba](https://github.com/ryansutrisno/simple-pos-laravel/commit/474a9ba6ccf4dc5ae82cf16d7eacfb820540d5db))
+
 ## [2.13.2](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.13.1...v2.13.2) (2026-03-07)
 
 
