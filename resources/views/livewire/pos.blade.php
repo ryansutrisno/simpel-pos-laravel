@@ -796,6 +796,11 @@
                     }
                 }, 100);
             });
+
+            // Show payment modal for digital payments
+            Livewire.on('showPaymentModal', (data) => {
+                window.dispatchEvent(new CustomEvent('show-payment-modal', { detail: data[0] }));
+            });
         });
 
         // Keep barcode input focused
