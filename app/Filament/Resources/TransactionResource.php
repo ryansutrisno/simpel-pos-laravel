@@ -73,6 +73,11 @@ class TransactionResource extends Resource
                                             ->required()
                                             ->searchable()
                                             ->preload()
+                                            ->columnSpan([
+                                                'default' => 2,
+                                                'md' => 2,
+                                                'lg' => 2,
+                                            ])
                                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                                 $product = \App\Models\Product::find($state);
                                                 if ($product) {
@@ -87,6 +92,7 @@ class TransactionResource extends Resource
                                             ->numeric()
                                             ->default(1)
                                             ->minValue(1)
+                                            ->columnSpan(1)
                                             ->afterStateUpdated(function ($state, Forms\Set $set, $get) {
                                                 $price = $get('price');
                                                 $set('subtotal', $price * $state);
@@ -96,15 +102,21 @@ class TransactionResource extends Resource
                                             ->required()
                                             ->numeric()
                                             ->prefix('Rp')
-                                            ->disabled(),
+                                            ->disabled()
+                                            ->columnSpan(1),
                                         Forms\Components\TextInput::make('subtotal')
                                             ->label('Subtotal')
                                             ->numeric()
                                             ->prefix('Rp')
                                             ->disabled()
-                                            ->dehydrated(false),
+                                            ->dehydrated(false)
+                                            ->columnSpan(1),
                                     ])
-                                    ->columns(4)
+                                    ->columns([
+                                        'default' => 2,
+                                        'md' => 3,
+                                        'lg' => 5,
+                                    ])
                                     ->defaultItems(1)
                                     ->reorderable(false)
                                     ->addActionLabel('Tambah Item')
@@ -221,6 +233,25 @@ class TransactionResource extends Resource
                         'split' => 'Split',
                         default => ucfirst($state),
                     }),
+                Tables\Columns\TextColumn::make('payment_gateway_status')
+                    ->label('Status Pembayaran')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'paid' => 'success',
+                        'expired' => 'danger',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'pending' => 'Menunggu',
+                        'paid' => 'Sukses',
+                        'expired' => 'Kadaluarsa',
+                        'failed' => 'Gagal',
+                        default => '-',
+                    })
+                    ->visible(fn ($record): bool => in_array($record->payment_method, ['digital', 'invoice']))
+                    ->toggleable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
