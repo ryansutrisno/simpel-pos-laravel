@@ -1,3 +1,10 @@
+## [2.15.3](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.2...v2.15.3) (2026-03-08)
+
+
+### 🐛 Bug Fixes
+
+* transaction list improvements for digital payments ([12cb53a](https://github.com/ryansutrisno/simple-pos-laravel/commit/12cb53a5e7aa9d4824f7bdb54b4ef8e60a5d34e3))
+
 ## [2.15.2](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.1...v2.15.2) (2026-03-08)
 
 
