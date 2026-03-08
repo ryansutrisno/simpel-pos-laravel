@@ -1,3 +1,10 @@
+## [2.15.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.0...v2.15.1) (2026-03-08)
+
+
+### 🐛 Bug Fixes
+
+* use x-on for payment modal event listener ([262676d](https://github.com/ryansutrisno/simple-pos-laravel/commit/262676dfe653e7b14a19f76466964d9ea4fc0c75))
+
 ## [2.15.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.14.1...v2.15.0) (2026-03-08)
 
 
