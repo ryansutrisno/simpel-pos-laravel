@@ -20,6 +20,10 @@ class EndOfDay extends Model
         'total_cash_sales',
         'total_transfer_sales',
         'total_qris_sales',
+        'total_digital_sales',
+        'total_invoice_sales',
+        'total_multi_sales',
+        'total_split_sales',
         'total_transactions',
         'total_profit',
         'notes',
@@ -36,6 +40,10 @@ class EndOfDay extends Model
         'total_cash_sales' => 'decimal:2',
         'total_transfer_sales' => 'decimal:2',
         'total_qris_sales' => 'decimal:2',
+        'total_digital_sales' => 'decimal:2',
+        'total_invoice_sales' => 'decimal:2',
+        'total_multi_sales' => 'decimal:2',
+        'total_split_sales' => 'decimal:2',
         'total_profit' => 'decimal:2',
     ];
 

@@ -46,7 +46,7 @@
         </div>
         <x-filament::card>
             <h3 class="text-lg font-semibold mb-4 dark:text-white">Breakdown per Metode Pembayaran</h3>
-            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
                 <div class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <div class="text-green-700 dark:text-green-400 font-semibold">Cash</div>
                     <div class="text-xl font-bold text-green-700 dark:text-green-400"> Rp {{
@@ -66,6 +66,34 @@
                     <div class="text-xl font-bold text-purple-700 dark:text-purple-400"> Rp {{
                         number_format($summary['total_qris_sales'], 0, ',', '.') }} </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">{{ $summary['qris_transactions'] }} transaksi
+                    </div>
+                </div>
+                <div class="text-center p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                    <div class="text-indigo-700 dark:text-indigo-400 font-semibold">Digital</div>
+                    <div class="text-xl font-bold text-indigo-700 dark:text-indigo-400"> Rp {{
+                        number_format($summary['total_digital_sales'], 0, ',', '.') }} </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $summary['digital_transactions'] }} transaksi
+                    </div>
+                </div>
+                <div class="text-center p-4 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
+                    <div class="text-cyan-700 dark:text-cyan-400 font-semibold">Invoice</div>
+                    <div class="text-xl font-bold text-cyan-700 dark:text-cyan-400"> Rp {{
+                        number_format($summary['total_invoice_sales'], 0, ',', '.') }} </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $summary['invoice_transactions'] }} transaksi
+                    </div>
+                </div>
+                <div class="text-center p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                    <div class="text-amber-700 dark:text-amber-400 font-semibold">Multi Payment</div>
+                    <div class="text-xl font-bold text-amber-700 dark:text-amber-400"> Rp {{
+                        number_format($summary['total_multi_sales'], 0, ',', '.') }} </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $summary['multi_transactions'] }} transaksi
+                    </div>
+                </div>
+                <div class="text-center p-4 bg-rose-50 dark:bg-rose-900/20 rounded-lg">
+                    <div class="text-rose-700 dark:text-rose-400 font-semibold">Split Bill</div>
+                    <div class="text-xl font-bold text-rose-700 dark:text-rose-400"> Rp {{
+                        number_format($summary['total_split_sales'], 0, ',', '.') }} </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $summary['split_transactions'] }} transaksi
                     </div>
                 </div>
             </div>

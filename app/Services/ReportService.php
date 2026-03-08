@@ -236,9 +236,14 @@ class ReportService
         $totalTransactions = $transactions->count();
         $totalProfit = $transactions->sum(fn ($t) => $t->items->sum('profit'));
 
+        // Payment method breakdown
         $cashSales = $transactions->where('payment_method', 'cash');
         $transferSales = $transactions->where('payment_method', 'transfer');
         $qrisSales = $transactions->where('payment_method', 'qris');
+        $digitalSales = $transactions->where('payment_method', 'digital');
+        $invoiceSales = $transactions->where('payment_method', 'invoice');
+        $multiSales = $transactions->where('payment_method', 'multi');
+        $splitSales = $transactions->where('payment_method', 'split');
 
         $previousEndOfDay = EndOfDay::where('date', '<', $date->toDateString())
             ->orderBy('date', 'desc')
@@ -256,9 +261,17 @@ class ReportService
             'total_cash_sales' => $cashSales->sum('total'),
             'total_transfer_sales' => $transferSales->sum('total'),
             'total_qris_sales' => $qrisSales->sum('total'),
+            'total_digital_sales' => $digitalSales->sum('total'),
+            'total_invoice_sales' => $invoiceSales->sum('total'),
+            'total_multi_sales' => $multiSales->sum('total'),
+            'total_split_sales' => $splitSales->sum('total'),
             'cash_transactions' => $cashSales->count(),
             'transfer_transactions' => $transferSales->count(),
             'qris_transactions' => $qrisSales->count(),
+            'digital_transactions' => $digitalSales->count(),
+            'invoice_transactions' => $invoiceSales->count(),
+            'multi_transactions' => $multiSales->count(),
+            'split_transactions' => $splitSales->count(),
             'expected_cash' => $expectedCash,
             'transactions' => $transactions,
         ];
@@ -278,6 +291,10 @@ class ReportService
             'total_cash_sales' => $summary['total_cash_sales'],
             'total_transfer_sales' => $summary['total_transfer_sales'],
             'total_qris_sales' => $summary['total_qris_sales'],
+            'total_digital_sales' => $summary['total_digital_sales'],
+            'total_invoice_sales' => $summary['total_invoice_sales'],
+            'total_multi_sales' => $summary['total_multi_sales'],
+            'total_split_sales' => $summary['total_split_sales'],
             'total_transactions' => $summary['total_transactions'],
             'total_profit' => $summary['total_profit'],
             'notes' => $data['notes'] ?? null,
