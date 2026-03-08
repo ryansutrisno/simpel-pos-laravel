@@ -1,3 +1,10 @@
+## [2.15.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.14.1...v2.15.0) (2026-03-08)
+
+
+### ✨ Features
+
+* add complete payment method breakdown to End of Day report ([d2ae4bb](https://github.com/ryansutrisno/simple-pos-laravel/commit/d2ae4bbd98d4e0fef37ba47c645bf8ba859ea166))
+
 ## [2.14.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.14.0...v2.14.1) (2026-03-07)
 
 
