@@ -1,3 +1,10 @@
+## [2.15.2](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.1...v2.15.2) (2026-03-08)
+
+
+### 🐛 Bug Fixes
+
+* add JavaScript Livewire listener for showPaymentModal event ([7056bba](https://github.com/ryansutrisno/simple-pos-laravel/commit/7056bbae6e219c5e1107df0d6bb4b7f68c7f618b))
+
 ## [2.15.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.0...v2.15.1) (2026-03-08)
 
 
