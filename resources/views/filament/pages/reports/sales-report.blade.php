@@ -71,15 +71,15 @@
 
             @if($reportData['sales_by_payment_method']->isNotEmpty())
                 <x-filament::card>
-                    <h3 class="text-lg font-semibold mb-4">Penjualan per Metode Pembayaran</h3>
-                    <div class="grid grid-cols-3 gap-4">
+                    <h3 class="text-lg font-semibold mb-4 dark:text-white">Penjualan per Metode Pembayaran</h3>
+                    <div class="flex flex-wrap gap-4">
                         @foreach($reportData['sales_by_payment_method'] as $method => $data)
-                            <div class="text-center p-4 bg-gray-50 rounded-lg">
-                                <div class="text-gray-600 capitalize">{{ $method }}</div>
-                                <div class="text-xl font-bold">
+                            <div class="flex-1 min-w-[200px] text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <div class="text-gray-600 dark:text-gray-300 capitalize">{{ $method }}</div>
+                                <div class="text-xl font-bold text-gray-900 dark:text-white">
                                     Rp {{ number_format($data['total'], 0, ',', '.') }}
                                 </div>
-                                <div class="text-sm text-gray-500">{{ $data['count'] }} transaksi</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $data['count'] }} transaksi</div>
                             </div>
                         @endforeach
                     </div>
