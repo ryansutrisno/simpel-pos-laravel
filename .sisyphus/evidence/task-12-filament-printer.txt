@@ -1,0 +1,28 @@
+# Task 12: PrinterConfigResource - Verification Evidence
+
+## Date: 2026-03-10
+
+## Resource File Created/Updated
+- Path: `app/Filament/Resources/PrinterConfigResource.php`
+- Pages: `app/Filament/Resources/PrinterConfigResource/Pages/`
+
+## Implementation
+✅ Navigation: "Printer" di grup "Pengaturan", sort: 2
+✅ Form sections:
+   - Informasi Printer: store_id, name, model
+   - Koneksi: connection_type (USB/Bluetooth/Network), address, port (conditional)
+   - Status: is_active, is_default
+   - Pengaturan Tambahan: settings (KeyValue)
+✅ Table columns: store.name, name, model, connection_type (badge), is_default (icon), is_active (icon), created_at
+✅ Filters: store, connection_type, is_active
+✅ Actions: Edit, Delete
+✅ SoftDeletes support (withoutGlobalScopes)
+
+## Navigation
+- Icon: heroicon-o-printer
+- Label: "Printer"
+- Group: "Pengaturan"
+- Sort: 2
+
+## Status: PASSED
+Task 12 selesai dengan sukses.
