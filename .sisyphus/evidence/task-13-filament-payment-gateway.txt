@@ -1,0 +1,31 @@
+# Task 13: PaymentGatewayConfigResource - Verification Evidence
+
+## Date: 2026-03-10
+
+## Resource File Created/Updated
+- Path: `app/Filament/Resources/PaymentGatewayConfigResource.php`
+- Pages: `app/Filament/Resources/PaymentGatewayConfigResource/Pages/`
+
+## Implementation
+✅ Navigation: "Payment Gateway" di grup "Pengaturan", sort: 3
+✅ Form sections:
+   - Informasi Provider: store_id, provider (Mayar/Midtrans), is_active, is_sandbox
+   - Konfigurasi Mayar: api_key, webhook_url (conditional)
+   - Konfigurasi Midtrans: server_key, client_key, environment (conditional)
+   - Metode Pembayaran: enabled_methods (QRIS, Bank Transfer, E-Wallet, dll - berdasarkan provider)
+✅ Table columns: store.name, provider (badge), is_active (icon), is_sandbox (icon), created_at
+✅ Filters: store, provider, is_active, is_sandbox
+✅ Actions: Edit, Delete
+
+## Provider Support
+✅ Mayar (dengan api_key, webhook_url)
+✅ Midtrans (dengan server_key, client_key, environment)
+
+## Navigation
+- Icon: heroicon-o-credit-card
+- Label: "Payment Gateway"
+- Group: "Pengaturan"
+- Sort: 3
+
+## Status: PASSED
+Task 13 selesai dengan sukses.
