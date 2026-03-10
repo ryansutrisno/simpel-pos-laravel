@@ -1,3 +1,11 @@
+## [2.15.5](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.4...v2.15.5) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* add null check for payment_gateway_status visibility ([ee88ef3](https://github.com/ryansutrisno/simple-pos-laravel/commit/ee88ef3cb898aa4f1143329b1fdf9a17dd0e6466))
+* sales report dark mode and responsive layout ([b61a59b](https://github.com/ryansutrisno/simple-pos-laravel/commit/b61a59bb8d71a978bc3cb3b86e14017c8f769adb))
+
 ## [2.15.4](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.3...v2.15.4) (2026-03-10)
 
 
