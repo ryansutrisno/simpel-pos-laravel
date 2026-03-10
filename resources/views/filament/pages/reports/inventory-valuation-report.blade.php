@@ -79,7 +79,7 @@
                         </thead>
                         <tbody>
                             @foreach($reportData['items'] as $index => $item)
-                                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                     <td class="py-3 px-4 text-gray-900 dark:text-white">{{ $index + 1 }}</td>
                                     <td class="py-3 px-4 font-medium text-gray-900 dark:text-white">{{ $item['product']->name }}</td>
                                     <td class="py-3 px-4 text-gray-600 dark:text-gray-300">{{ $item['sku'] ?? '-' }}</td>
