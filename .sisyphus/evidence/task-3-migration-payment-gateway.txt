@@ -1,0 +1,48 @@
+# Task 3: Migration PaymentGatewayConfig - Verification Evidence
+
+## Date: 2026-03-10
+
+## Migration File Created
+- Path: `database/migrations/2026_03_10_143655_update_payment_gateway_configs_add_provider_enum.php`
+- Command: `php artisan make:migration update_payment_gateway_configs_add_provider_enum`
+
+## Changes Made
+✅ Added provider_config column (json, nullable)
+✅ Added composite index: store_id + provider + is_active
+✅ Updated existing data: provider 'cash' → 'mayar' (backward compatibility)
+
+## New Column
+✅ provider_config (json, nullable) - untuk simpan config spesifik provider (Mayar/Midtrans)
+
+## New Index
+✅ pgc_store_provider_active_index (store_id, provider, is_active)
+
+## Existing Columns (Preserved)
+✅ id (bigint, primary key)
+✅ store_id (bigint, foreign key)
+✅ provider (varchar)
+✅ is_active (tinyint)
+✅ is_sandbox (tinyint)
+✅ api_key (longtext)
+✅ config (json)
+✅ enabled_methods (json)
+✅ webhook_url (varchar)
+✅ created_at (timestamp)
+✅ updated_at (timestamp)
+
+## Foreign Keys (Preserved)
+✅ payment_gateway_configs_store_id_foreign
+   - References: stores.id
+   - On Delete: CASCADE
+
+## Migration Status
+✅ Migration berhasil dijalankan: `php artisan migrate --path=database/migrations/2026_03_10_143655_update_payment_gateway_configs_add_provider_enum.php`
+✅ Output: DONE (82.92ms)
+
+## Database Verification
+✅ Kolom provider_config terdeteksi di database schema
+✅ Index baru terdeteksi
+✅ Data existing tidak hilang (backward compatible)
+
+## Status: PASSED
+Task 3 selesai dengan sukses.
