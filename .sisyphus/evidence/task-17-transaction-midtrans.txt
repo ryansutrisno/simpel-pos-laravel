@@ -1,0 +1,33 @@
+# Task 17: Update Transaction untuk gunakan PaymentGateway (Midtrans) - Verification Evidence
+
+## Date: 2026-03-10
+
+## Files Created/Updated
+- Created: `app/Services/PaymentGateway/MidtransGateway.php`
+- Updated: `app/Services/PaymentGateway/PaymentGatewayFactory.php`
+
+## Implementation - MidtransGateway
+✅ Constructor dengan server_key, client_key, environment (sandbox/production)
+✅ createQRIS($amount) - Generate QRIS via Midtrans Snap API
+✅ createInvoice($data) - Create payment link dengan items
+✅ checkStatus($paymentId) - Check transaction status
+✅ cancelPayment($paymentId) - Cancel pending payment
+✅ handleWebhook($payload) - Handle webhook dengan signature verification
+
+## Implementation - PaymentGatewayFactory
+✅ Registered 'midtrans' => MidtransGateway::class
+
+## Supported Payment Methods (Midtrans)
+✅ QRIS (via GoPay, ShopeePay, other_qris)
+✅ Credit Card
+✅ GoPay
+✅ ShopeePay
+✅ Bank Transfer
+
+## Verification
+✅ MidtransGateway implements PaymentGatewayInterface
+✅ Factory can instantiate Midtrans gateway
+✅ All required methods implemented
+
+## Status: PASSED
+Task 17 selesai dengan sukses.

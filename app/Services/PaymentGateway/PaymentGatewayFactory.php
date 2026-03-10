@@ -19,10 +19,7 @@ class PaymentGatewayFactory
      */
     protected static array $providers = [
         'mayar' => MayarGateway::class,
-        // Future providers can be registered here:
-        // 'midtrans' => MidtransGateway::class,
-        // 'xendit' => XenditGateway::class,
-        // 'tripay' => TripayGateway::class,
+        'midtrans' => MidtransGateway::class,
     ];
 
     /**
