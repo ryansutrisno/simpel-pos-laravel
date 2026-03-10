@@ -1,0 +1,41 @@
+# Task 5: Model AppSettings - Verification Evidence
+
+## Date: 2026-03-10
+
+## Model File Created
+- Path: `app/Models/AppSettings.php`
+- Command: `php artisan make:model AppSettings`
+
+## Implementation
+✅ Singleton pattern dengan getInstance()
+✅ Fillable: app_name, timezone, date_format, time_format, currency, currency_format, email_from, email_from_name, maintenance_mode
+✅ Casts: maintenance_mode (boolean), created_at/updated_at (datetime)
+✅ Methods:
+   - getInstance(): return AppSettings instance (auto-create dengan defaults)
+   - get($key, $default): ambil setting by key
+   - set($key, $value): set setting by key dan save
+   - allSettings(): ambil semua settings sebagai array
+
+## Test Results (Tinker)
+```php
+$s = App\Models\AppSettings::getInstance();
+// Output: Instance ID: 1
+
+App\Models\AppSettings::set('app_name', 'TestPOS');
+
+App\Models\AppSettings::get('app_name');
+// Output: TestPOS
+```
+
+## Verification
+✅ Model bisa di-instance
+✅ Singleton pattern berfungsi (hanya 1 row dengan ID = 1)
+✅ Auto-create dengan default values berfungsi
+✅ get() dan set() methods berfungsi
+
+## Database
+✅ Instance tercreate di tabel app_settings (id = 1)
+✅ Default values tersimpan: app_name='Simpel POS', timezone='Asia/Jakarta', dll
+
+## Status: PASSED
+Task 5 selesai dengan sukses.
