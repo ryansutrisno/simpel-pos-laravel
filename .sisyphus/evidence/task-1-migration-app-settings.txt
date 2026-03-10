@@ -1,0 +1,38 @@
+# Task 1: Migration AppSettings - Verification Evidence
+
+## Date: 2026-03-10
+
+## Migration File Created
+- Path: `database/migrations/2026_03_10_142716_create_app_settings_table.php`
+- Command: `php artisan make:migration create_app_settings_table`
+
+## Fields Created
+✅ id (bigint, primary key)
+✅ app_name (varchar, nullable)
+✅ timezone (varchar, default: Asia/Jakarta)
+✅ date_format (varchar, default: d/m/Y)
+✅ time_format (varchar, default: H:i)
+✅ currency (varchar, default: IDR)
+✅ currency_format (varchar, default: id_ID)
+✅ email_from (varchar, nullable)
+✅ email_from_name (varchar, nullable)
+✅ maintenance_mode (tinyint, default: false)
+✅ created_at (timestamp)
+✅ updated_at (timestamp)
+
+## Indexes Created
+✅ app_settings_id_unique (unique constraint untuk singleton pattern)
+✅ app_settings_maintenance_mode_index (untuk query performance)
+✅ primary (primary key pada id)
+
+## Migration Status
+✅ Migration berhasil dijalankan: `php artisan migrate --path=database/migrations/2026_03_10_142716_create_app_settings_table.php`
+✅ Output: DONE (185.18ms)
+
+## Database Verification
+✅ Tabel app_settings terdeteksi di database schema
+✅ Semua columns sesuai spesifikasi
+✅ Unique constraint pada id berfungsi untuk enforce singleton
+
+## Status: PASSED
+Task 1 selesai dengan sukses.
