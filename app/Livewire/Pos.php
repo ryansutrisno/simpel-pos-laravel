@@ -143,6 +143,17 @@ class Pos extends Component
                 ->persistent()
                 ->send();
         }
+
+        // Check for maintenance mode
+        $appSettings = AppSettings::getInstance();
+        if ($appSettings->maintenance_mode) {
+            Notification::make()
+                ->title('Mode Maintenance Aktif')
+                ->body('Aplikasi sedang dalam mode maintenance. Beberapa fitur mungkin tidak tersedia.')
+                ->warning()
+                ->persistent()
+                ->send();
+        }
     }
 
     public function updatedPaymentMethod($value)

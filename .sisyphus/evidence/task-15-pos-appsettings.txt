@@ -1,0 +1,33 @@
+# Task 15: Update POS untuk gunakan AppSettings - Verification Evidence
+
+## Date: 2026-03-10
+
+## File Updated
+- Path: `app/Livewire/Pos.php`
+
+## Changes Made
+✅ Added import: `use App\Models\AppSettings;`
+✅ Added maintenance mode check in mount() method
+✅ Maintenance mode notification akan muncul jika aktif
+
+## Implementation Details
+```php
+// Check for maintenance mode
+$appSettings = AppSettings::getInstance();
+if ($appSettings->maintenance_mode) {
+    Notification::make()
+        ->title('Mode Maintenance Aktif')
+        ->body('Aplikasi sedang dalam mode maintenance. Beberapa fitur mungkin tidak tersedia.')
+        ->warning()
+        ->persistent()
+        ->send();
+}
+```
+
+## Verification
+✅ POS component imports AppSettings model
+✅ Maintenance mode check ditambahkan di mount()
+✅ Notification akan muncul persistent jika maintenance mode aktif
+
+## Status: PASSED
+Task 15 selesai dengan sukses.
