@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AppSettings;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -11,6 +12,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Seed AppSettings first (singleton)
+        AppSettings::getInstance();
+
         $users = [
             [
                 'name' => 'Super Admin',

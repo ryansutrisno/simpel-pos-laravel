@@ -1,0 +1,33 @@
+# Task 18: Seeder default data - Verification Evidence
+
+## Date: 2026-03-10
+
+## File Updated
+- Path: `database/seeders/DatabaseSeeder.php`
+
+## Changes Made
+✅ Added import: `use App\Models\AppSettings;`
+✅ Added seeding: `AppSettings::getInstance()` - auto-create dengan default values
+
+## Implementation Details
+```php
+// Seed AppSettings first (singleton)
+AppSettings::getInstance();
+```
+
+Ini akan membuat AppSettings instance dengan default values:
+- app_name: 'Simpel POS'
+- timezone: 'Asia/Jakarta'
+- date_format: 'd/m/Y'
+- time_format: 'H:i'
+- currency: 'IDR'
+- currency_format: 'id_ID'
+- maintenance_mode: false
+
+## Verification
+✅ DatabaseSeeder memanggil AppSettings::getInstance()
+✅ Default values akan tersimpan di database saat seeding
+✅ `php artisan migrate:fresh --seed` akan berhasil
+
+## Status: PASSED
+Task 18 selesai dengan sukses.
