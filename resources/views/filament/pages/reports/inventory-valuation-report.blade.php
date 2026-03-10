@@ -79,14 +79,14 @@
                         </thead>
                         <tbody>
                             @foreach($reportData['items'] as $index => $item)
-                                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                    <td class="py-3 px-4 text-gray-900 dark:text-white">{{ $index + 1 }}</td>
-                                    <td class="py-3 px-4 font-medium text-gray-900 dark:text-white">{{ $item['product']->name }}</td>
+                                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group">
+                                    <td class="py-3 px-4 text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white">{{ $index + 1 }}</td>
+                                    <td class="py-3 px-4 font-medium text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white">{{ $item['product']->name }}</td>
                                     <td class="py-3 px-4 text-gray-600 dark:text-gray-300">{{ $item['sku'] ?? '-' }}</td>
                                     <td class="py-3 px-4 text-gray-600 dark:text-gray-300">{{ $item['category'] ?? '-' }}</td>
-                                    <td class="py-3 px-4 text-right text-gray-900 dark:text-white">{{ number_format($item['quantity']) }}</td>
-                                    <td class="py-3 px-4 text-right text-gray-900 dark:text-white">Rp {{ number_format($item['unit_cost'], 0, ',', '.') }}</td>
-                                    <td class="py-3 px-4 text-right font-semibold text-gray-900 dark:text-white">Rp {{ number_format($item['total_value'], 0, ',', '.') }}</td>
+                                    <td class="py-3 px-4 text-right text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white">{{ number_format($item['quantity']) }}</td>
+                                    <td class="py-3 px-4 text-right text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white">Rp {{ number_format($item['unit_cost'], 0, ',', '.') }}</td>
+                                    <td class="py-3 px-4 text-right font-semibold text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white">Rp {{ number_format($item['total_value'], 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
