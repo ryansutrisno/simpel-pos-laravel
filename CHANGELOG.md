@@ -1,3 +1,10 @@
+## [2.15.6](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.5...v2.15.6) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* inventory valuation table dark mode support ([9b2d157](https://github.com/ryansutrisno/simple-pos-laravel/commit/9b2d1576b4632be6483169298ffaba000e22132c))
+
 ## [2.15.5](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.4...v2.15.5) (2026-03-10)
 
 
