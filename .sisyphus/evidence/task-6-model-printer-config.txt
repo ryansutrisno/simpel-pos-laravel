@@ -1,0 +1,44 @@
+# Task 6: Model PrinterConfig - Verification Evidence
+
+## Date: 2026-03-10
+
+## Model File Created
+- Path: `app/Models/PrinterConfig.php`
+- Command: `php artisan make:model PrinterConfig`
+
+## Implementation
+✅ Fillable: store_id, name, model, connection_type, address, port, is_default, is_active, settings
+✅ Casts:
+   - is_default: boolean
+   - is_active: boolean
+   - settings: array
+   - port: integer
+   - timestamps: datetime
+   - deleted_at: datetime
+✅ SoftDeletes trait
+✅ Relationship: store() belongsTo Store
+✅ Scopes:
+   - active(): where is_active = true
+   - default(): where is_default = true
+   - forStore($storeId): where store_id = $storeId
+✅ Method: isDefault() return boolean
+
+## Test Results (Tinker)
+```php
+$pc = new App\Models\PrinterConfig();
+// Output: Model loaded: App\Models\PrinterConfig
+// Output: Fillable count: 9
+// Output: Casts: ["id","is_default","is_active","settings","port","created_at","updated_at","deleted_at"]
+```
+
+## Verification
+✅ Model bisa di-instance
+✅ Fillable fields tersedia
+✅ Casts berfungsi
+✅ SoftDeletes trait loaded
+✅ Relationship store() tersedia
+✅ Scopes active(), default(), forStore() tersedia
+✅ Method isDefault() tersedia
+
+## Status: PASSED
+Task 6 selesai dengan sukses.
