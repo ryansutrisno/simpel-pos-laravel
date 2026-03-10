@@ -1,0 +1,28 @@
+# Task 11: AppSettingsResource - Verification Evidence
+
+## Date: 2026-03-10
+
+## Resource File Created/Updated
+- Path: `app/Filament/Resources/AppSettingsResource.php`
+- Page: `app/Filament/Resources/AppSettingsResource/Pages/EditAppSettings.php`
+
+## Implementation
+✅ Singleton pattern (hanya edit page)
+✅ Navigation: "Pengaturan Aplikasi" di grup "Pengaturan"
+✅ canCreate() → false
+✅ canDelete() → false
+✅ Form sections:
+   - Informasi Aplikasi: app_name, app_logo, favicon
+   - Pengaturan Regional: timezone, date_format, time_format, currency, currency_format
+   - Pengaturan Email: email_from, email_from_name
+   - Pengaturan Maintenance: maintenance_mode
+✅ EditAppSettings page dengan mount() override untuk singleton
+✅ Unnecessary pages dihapus: CreateAppSettings, ListAppSettings
+
+## Navigation
+- Icon: heroicon-o-cog-6-tooth
+- Label: "Pengaturan Aplikasi"
+- Sort: 1 (pertama di grup)
+
+## Status: PASSED
+Task 11 selesai dengan sukses.
