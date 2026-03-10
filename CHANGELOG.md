@@ -1,3 +1,10 @@
+## [2.15.4](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.3...v2.15.4) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* add null check for payment_gateway_status visibility ([ea52054](https://github.com/ryansutrisno/simple-pos-laravel/commit/ea520540b690fdb5364c5f4cfb27faf1a162c4cc))
+
 ## [2.15.3](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.2...v2.15.3) (2026-03-08)
 
 
