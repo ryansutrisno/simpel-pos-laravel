@@ -250,7 +250,7 @@ class TransactionResource extends Resource
                         'failed' => 'Gagal',
                         default => '-',
                     })
-                    ->visible(fn ($record): bool => in_array($record->payment_method, ['digital', 'invoice']))
+                    ->visible(fn ($record): bool => $record && in_array($record->payment_method, ['digital', 'invoice']))
                     ->toggleable(),
             ])
             ->defaultSort('created_at', 'desc')
