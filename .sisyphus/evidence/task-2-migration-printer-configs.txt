@@ -1,0 +1,48 @@
+# Task 2: Migration PrinterConfig - Verification Evidence
+
+## Date: 2026-03-10
+
+## Migration File Created
+- Path: `database/migrations/2026_03_10_143305_create_printer_configs_table.php`
+- Command: `php artisan make:migration create_printer_configs_table`
+
+## Fields Created
+✅ id (bigint, primary key)
+✅ store_id (bigint, foreign key)
+✅ name (varchar)
+✅ model (varchar)
+✅ connection_type (enum: usb/bluetooth/network)
+✅ address (varchar)
+✅ port (int, nullable)
+✅ is_default (tinyint, default: false)
+✅ is_active (tinyint, default: true)
+✅ settings (json, nullable)
+✅ created_at (timestamp)
+✅ updated_at (timestamp)
+✅ deleted_at (timestamp, soft delete)
+
+## Indexes Created
+✅ primary (primary key)
+✅ printer_configs_is_active_index
+✅ printer_configs_is_default_index
+✅ printer_configs_store_id_index
+✅ printer_configs_store_id_name_unique (unique constraint)
+
+## Foreign Keys
+✅ printer_configs_store_id_foreign
+   - References: stores.id
+   - On Delete: CASCADE
+
+## Migration Status
+✅ Migration berhasil dijalankan: `php artisan migrate --path=database/migrations/2026_03_10_143305_create_printer_configs_table.php`
+✅ Output: DONE (223.89ms)
+
+## Database Verification
+✅ Tabel printer_configs terdeteksi di database schema
+✅ Semua columns sesuai spesifikasi
+✅ Foreign key constraint berfungsi
+✅ Unique constraint store_id + name berfungsi
+✅ Soft deletes enabled (deleted_at column)
+
+## Status: PASSED
+Task 2 selesai dengan sukses.
