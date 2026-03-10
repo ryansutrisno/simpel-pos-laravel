@@ -1,3 +1,30 @@
+## [2.16.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.8...v2.16.0) (2026-03-10)
+
+
+### ✨ Features
+
+* **settings:** add app_settings migration ([52c1aa8](https://github.com/ryansutrisno/simple-pos-laravel/commit/52c1aa80ec81f3f1e74a07442f98d5daf0b2037b))
+* **settings:** add AppSettings model with singleton pattern ([5870cd3](https://github.com/ryansutrisno/simple-pos-laravel/commit/5870cd3fbf3e8e7038b713c2f0ee3b7fa0a59f31))
+* **settings:** add AppSettings seeder ([baba1fc](https://github.com/ryansutrisno/simple-pos-laravel/commit/baba1fc54a74a3ed35b929e667b3fabb0b6ee074))
+* **settings:** add AppSettingsResource Filament ([311c4d9](https://github.com/ryansutrisno/simple-pos-laravel/commit/311c4d9945f641abf4d4322de378a786f4935292))
+* **settings:** add AppSettingsService, PrinterConfigService, PaymentGatewayService ([780d3e1](https://github.com/ryansutrisno/simple-pos-laravel/commit/780d3e156c3459fd7fa5ae50afcf4229098b5bbe))
+* **settings:** add Filament resource pages for printer and payment configs ([87dea53](https://github.com/ryansutrisno/simple-pos-laravel/commit/87dea53dc4ef74ca937ac7237e818df23f46bec0))
+* **settings:** add MidtransGateway support ([d0a807b](https://github.com/ryansutrisno/simple-pos-laravel/commit/d0a807bf31cf6745787aa94789f865d596153dba))
+* **settings:** add PaymentGatewayConfigResource Filament ([ccb9204](https://github.com/ryansutrisno/simple-pos-laravel/commit/ccb9204f12eb7b4ab6e2f365b214d5c3744ec2c5))
+* **settings:** add printer_configs migration ([57234be](https://github.com/ryansutrisno/simple-pos-laravel/commit/57234be72f123dde2056ac9d2a99c90881adb122))
+* **settings:** add PrinterConfig model with relationships ([648aef6](https://github.com/ryansutrisno/simple-pos-laravel/commit/648aef613c2b4534be436098e0b4cb066327c3ad))
+* **settings:** add PrinterConfigResource Filament ([3661fb9](https://github.com/ryansutrisno/simple-pos-laravel/commit/3661fb9a4bb92caeee8914c01a6be1d621931a40))
+* **settings:** add SettingsOverviewWidget to dashboard ([6ef9dc8](https://github.com/ryansutrisno/simple-pos-laravel/commit/6ef9dc8241ec34c3aa839f4085cb19bfc99aba22))
+* **settings:** extend payment_gateway_configs with provider_config ([af8c963](https://github.com/ryansutrisno/simple-pos-laravel/commit/af8c963e213395ecdefe9c9343ef6a666fab6e65))
+* **settings:** extend PaymentGatewayConfig with provider enum ([40ca6e0](https://github.com/ryansutrisno/simple-pos-laravel/commit/40ca6e0f988a5ef999f3439fb1dc8aa69eb40c5e))
+* **settings:** integrate AppSettings ke POS ([8d90d89](https://github.com/ryansutrisno/simple-pos-laravel/commit/8d90d897381c861e53f0491d5c8076f614de5252))
+* **settings:** integrate PrinterConfig ke Receipt ([e954ded](https://github.com/ryansutrisno/simple-pos-laravel/commit/e954dedf0287c4c8fba0a22896d1cd0bd269b63c))
+
+
+### 📚 Documentation
+
+* **settings:** add evidence for task 4 (redundant, already in task 2) ([a1be401](https://github.com/ryansutrisno/simple-pos-laravel/commit/a1be4017f463a34d25bc6ae0824aa0d656418b91))
+
 ## [2.15.8](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.7...v2.15.8) (2026-03-10)
 
 
