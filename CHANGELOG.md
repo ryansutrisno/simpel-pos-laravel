@@ -1,3 +1,10 @@
+## [2.15.7](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.6...v2.15.7) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* improve table row hover visibility in dark mode ([faf300c](https://github.com/ryansutrisno/simple-pos-laravel/commit/faf300c5246b218b03579b1ab108679eadcffbcc))
+
 ## [2.15.6](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.5...v2.15.6) (2026-03-10)
 
 
