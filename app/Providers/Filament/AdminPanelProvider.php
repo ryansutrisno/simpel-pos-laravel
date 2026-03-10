@@ -70,6 +70,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
+                // 0. Settings Overview (Pengaturan Aplikasi)
+                SettingsOverviewWidget::class,
                 // 1. Card Shift - Full width
                 CurrentShiftWidget::class,
                 // 2. Card Produk Stats (Total Produk, Varian, Paket, Alert)
