@@ -11,6 +11,10 @@ class PaymentGatewayConfig extends Model
 {
     use HasFactory;
 
+    public const PROVIDER_MAYAR = 'mayar';
+
+    public const PROVIDER_MIDTRANS = 'midtrans';
+
     protected $fillable = [
         'store_id',
         'provider',
@@ -18,6 +22,7 @@ class PaymentGatewayConfig extends Model
         'is_sandbox',
         'api_key',
         'config',
+        'provider_config',
         'enabled_methods',
         'webhook_url',
     ];
@@ -28,6 +33,7 @@ class PaymentGatewayConfig extends Model
             'is_active' => 'boolean',
             'is_sandbox' => 'boolean',
             'config' => 'array',
+            'provider_config' => 'array',
             'enabled_methods' => 'array',
         ];
     }
@@ -79,12 +85,34 @@ class PaymentGatewayConfig extends Model
         return $this->is_sandbox;
     }
 
+    public function isMayar(): bool
+    {
+        return $this->provider === self::PROVIDER_MAYAR;
+    }
+
+    public function isMidtrans(): bool
+    {
+        return $this->provider === self::PROVIDER_MIDTRANS;
+    }
+
+    public function getProviderConfig(?string $key = null, mixed $default = null): mixed
+    {
+        $config = $this->provider_config ?? [];
+
+        if ($key === null) {
+            return $config;
+        }
+
+        return $config[$key] ?? $default;
+    }
+
     public function getGatewayConfig(): array
     {
         return [
             'api_key' => $this->api_key,
             'sandbox' => $this->is_sandbox,
             'config' => $this->config ?? [],
+            'provider_config' => $this->provider_config ?? [],
         ];
     }
 }

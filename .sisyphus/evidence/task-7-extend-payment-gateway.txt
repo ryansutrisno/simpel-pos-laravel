@@ -1,0 +1,32 @@
+# Task 7: Extend PaymentGatewayConfig - Verification Evidence
+
+## Date: 2026-03-10
+
+## Model File Updated
+- Path: `app/Models/PaymentGatewayConfig.php`
+
+## Changes Made
+✅ Constants:
+   - PROVIDER_MAYAR = 'mayar'
+   - PROVIDER_MIDTRANS = 'midtrans'
+
+✅ Fillable extended:
+   - Added 'provider_config'
+
+✅ Casts extended:
+   - Added 'provider_config' => 'array'
+
+✅ Methods added:
+   - isMayar(): return boolean
+   - isMidtrans(): return boolean
+   - getProviderConfig($key, $default): ambil provider_config
+   - Updated getGatewayConfig(): include provider_config
+
+## Backward Compatibility
+✅ Existing methods preserved:
+   - store(), setApiKeyAttribute(), getApiKeyAttribute()
+   - scopeActive(), scopeForProvider()
+   - isEnabled(), isSandbox(), getGatewayConfig()
+
+## Status: PASSED
+Task 7 selesai dengan sukses.
