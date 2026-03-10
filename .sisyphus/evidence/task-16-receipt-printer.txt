@@ -1,0 +1,41 @@
+# Task 16: Update Receipt untuk gunakan PrinterConfig - Verification Evidence
+
+## Date: 2026-03-10
+
+## File Updated
+- Path: `app/Services/ReceiptTemplateService.php`
+
+## Changes Made
+✅ Added import: `use App\Models\PrinterConfig;`
+✅ Added method: `getDefaultPrinter($store)` - ambil printer default untuk store
+✅ Added method: `getAvailablePrinters($store)` - ambil semua printer aktif untuk store
+
+## Implementation Details
+```php
+public function getDefaultPrinter(?Store $store = null): ?PrinterConfig
+{
+    $storeId = $store?->id;
+
+    return PrinterConfig::forStore($storeId)
+        ->default()
+        ->active()
+        ->first();
+}
+
+public function getAvailablePrinters(?Store $store = null): \Illuminate\Database\Eloquent\Collection
+{
+    $storeId = $store?->id;
+
+    return PrinterConfig::forStore($storeId)
+        ->active()
+        ->get();
+}
+```
+
+## Verification
+✅ ReceiptTemplateService bisa mengambil printer default
+✅ ReceiptTemplateService bisa mengambil semua printer aktif
+✅ Integration dengan PrinterConfig model berfungsi
+
+## Status: PASSED
+Task 16 selesai dengan sukses.

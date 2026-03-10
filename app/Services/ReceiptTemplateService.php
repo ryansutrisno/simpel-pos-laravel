@@ -2,11 +2,37 @@
 
 namespace App\Services;
 
+use App\Models\PrinterConfig;
 use App\Models\ReceiptTemplate;
 use App\Models\Store;
 
 class ReceiptTemplateService
 {
+    /**
+     * Get the default printer configuration for a store.
+     */
+    public function getDefaultPrinter(?Store $store = null): ?PrinterConfig
+    {
+        $storeId = $store?->id;
+
+        return PrinterConfig::forStore($storeId)
+            ->default()
+            ->active()
+            ->first();
+    }
+
+    /**
+     * Get all available printers for a store.
+     */
+    public function getAvailablePrinters(?Store $store = null): \Illuminate\Database\Eloquent\Collection
+    {
+        $storeId = $store?->id;
+
+        return PrinterConfig::forStore($storeId)
+            ->active()
+            ->get();
+    }
+
     /**
      * Get the active receipt template for a store.
      */
@@ -83,7 +109,7 @@ class ReceiptTemplateService
         $errors = [];
 
         foreach ($requiredSections as $section) {
-            if (!isset($templateData[$section])) {
+            if (! isset($templateData[$section])) {
                 $errors[] = "Missing required section: {$section}";
             }
         }
@@ -91,10 +117,10 @@ class ReceiptTemplateService
         // Validate header section
         if (isset($templateData['header'])) {
             $header = $templateData['header'];
-            if (isset($header['show_logo']) && !is_bool($header['show_logo'])) {
+            if (isset($header['show_logo']) && ! is_bool($header['show_logo'])) {
                 $errors[] = "Header 'show_logo' must be boolean";
             }
-            if (isset($header['custom_header_message']) && !is_string($header['custom_header_message'])) {
+            if (isset($header['custom_header_message']) && ! is_string($header['custom_header_message'])) {
                 $errors[] = "Header 'custom_header_message' must be string";
             }
         }
@@ -102,7 +128,7 @@ class ReceiptTemplateService
         // Validate body section
         if (isset($templateData['body'])) {
             $body = $templateData['body'];
-            if (isset($body['item_format']) && !in_array($body['item_format'], ['name_price_quantity', 'name_only', 'price_only'])) {
+            if (isset($body['item_format']) && ! in_array($body['item_format'], ['name_price_quantity', 'name_only', 'price_only'])) {
                 $errors[] = "Body 'item_format' must be one of: name_price_quantity, name_only, price_only";
             }
         }
@@ -110,10 +136,10 @@ class ReceiptTemplateService
         // Validate footer section
         if (isset($templateData['footer'])) {
             $footer = $templateData['footer'];
-            if (isset($footer['custom_footer_message']) && !is_string($footer['custom_footer_message'])) {
+            if (isset($footer['custom_footer_message']) && ! is_string($footer['custom_footer_message'])) {
                 $errors[] = "Footer 'custom_footer_message' must be string";
             }
-            if (isset($footer['show_barcode']) && !is_bool($footer['show_barcode'])) {
+            if (isset($footer['show_barcode']) && ! is_bool($footer['show_barcode'])) {
                 $errors[] = "Footer 'show_barcode' must be boolean";
             }
         }
@@ -121,13 +147,13 @@ class ReceiptTemplateService
         // Validate styling section
         if (isset($templateData['styling'])) {
             $styling = $templateData['styling'];
-            if (isset($styling['font_size']) && !in_array($styling['font_size'], ['small', 'normal', 'large'])) {
+            if (isset($styling['font_size']) && ! in_array($styling['font_size'], ['small', 'normal', 'large'])) {
                 $errors[] = "Styling 'font_size' must be one of: small, normal, large";
             }
-            if (isset($styling['text_alignment']) && !in_array($styling['text_alignment'], ['left', 'center', 'right'])) {
+            if (isset($styling['text_alignment']) && ! in_array($styling['text_alignment'], ['left', 'center', 'right'])) {
                 $errors[] = "Styling 'text_alignment' must be one of: left, center, right";
             }
-            if (isset($styling['separator_style']) && !in_array($styling['separator_style'], ['dashes', 'dots', 'line'])) {
+            if (isset($styling['separator_style']) && ! in_array($styling['separator_style'], ['dashes', 'dots', 'line'])) {
                 $errors[] = "Styling 'separator_style' must be one of: dashes, dots, line";
             }
         }
@@ -189,6 +215,7 @@ class ReceiptTemplateService
     public function renderReceipt(ReceiptTemplate $template, array $data): string
     {
         $renderer = new ReceiptRenderer($template, $data);
+
         return $renderer->render();
     }
 }
