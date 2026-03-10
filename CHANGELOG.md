@@ -1,3 +1,10 @@
+## [2.15.8](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.7...v2.15.8) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* **inventory-valuation-report:** enhance table row hover state consistency ([8f70052](https://github.com/ryansutrisno/simple-pos-laravel/commit/8f70052ddccc2a08265d026c094dcb5cd4d417da))
+
 ## [2.15.7](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.6...v2.15.7) (2026-03-10)
 
 
