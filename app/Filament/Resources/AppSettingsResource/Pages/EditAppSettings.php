@@ -27,13 +27,13 @@ class EditAppSettings extends EditRecord
     {
         parent::save($shouldRedirect, $shouldSendSavedNotification);
 
-        // Clear cache agar data baru di-load di request berikutnya
         Cache::forget('app.settings');
 
-        // Update config secara langsung untuk efek immediate
         $settings = AppSettings::getInstance();
         config(['app.name' => $settings->app_name]);
         config(['app.timezone' => $settings->timezone]);
+
+        $this->redirect(static::getUrl(['record' => $settings->id]));
     }
 
     protected function getHeaderActions(): array
