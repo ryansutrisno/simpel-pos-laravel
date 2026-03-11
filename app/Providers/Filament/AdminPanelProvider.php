@@ -45,6 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName(fn () => \App\Models\AppSettings::get('app_name', 'Simpel POS'))
+            ->brandLogo(fn () => \App\Models\AppSettings::get('app_logo') ? asset('storage/'.\App\Models\AppSettings::get('app_logo')) : null)
             ->spa()
             ->sidebarCollapsibleOnDesktop()
             ->colors([
