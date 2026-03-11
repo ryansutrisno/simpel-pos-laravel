@@ -98,6 +98,7 @@ class AdminPanelProvider extends PanelProvider
                 BundleSummaryWidget::class,
             ])
             ->middleware([
+                LoadAppSettings::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

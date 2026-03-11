@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class AppSettings extends Model
 {
@@ -30,6 +31,17 @@ class AppSettings extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            Cache::forget('app.settings');
+        });
+
+        static::updated(function () {
+            Cache::forget('app.settings');
+        });
     }
 
     public static function getInstance(): self
