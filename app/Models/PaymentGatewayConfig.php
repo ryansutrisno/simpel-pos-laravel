@@ -70,6 +70,11 @@ class PaymentGatewayConfig extends Model
         return $query->where('is_active', true);
     }
 
+    public function scopeForStore($query, int $storeId)
+    {
+        return $query->where('store_id', $storeId);
+    }
+
     public function scopeForProvider($query, string $provider)
     {
         return $query->where('provider', $provider);
