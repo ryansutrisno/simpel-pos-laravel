@@ -5,6 +5,7 @@ namespace App\Filament\Resources\AppSettingsResource\Pages;
 use App\Filament\Resources\AppSettingsResource;
 use App\Models\AppSettings;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Cache;
 
 class EditAppSettings extends EditRecord
 {
@@ -20,6 +21,19 @@ class EditAppSettings extends EditRecord
         $this->authorizeAccess();
 
         $this->form->fill($this->record->attributesToArray());
+    }
+
+    public function save(bool $shouldRedirect = true, bool $shouldSendSavedNotification = true): void
+    {
+        parent::save($shouldRedirect, $shouldSendSavedNotification);
+
+        // Clear cache agar data baru di-load di request berikutnya
+        Cache::forget('app.settings');
+
+        // Update config secara langsung untuk efek immediate
+        $settings = AppSettings::getInstance();
+        config(['app.name' => $settings->app_name]);
+        config(['app.timezone' => $settings->timezone]);
     }
 
     protected function getHeaderActions(): array
