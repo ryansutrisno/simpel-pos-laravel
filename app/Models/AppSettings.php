@@ -14,6 +14,8 @@ class AppSettings extends Model
 
     protected $fillable = [
         'app_name',
+        'app_logo',
+        'favicon',
         'timezone',
         'date_format',
         'time_format',
