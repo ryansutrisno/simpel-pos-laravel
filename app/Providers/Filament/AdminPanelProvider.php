@@ -12,6 +12,7 @@ use App\Filament\Widgets\PaymentMethodChartWidget;
 use App\Filament\Widgets\ProductStatsWidget;
 use App\Filament\Widgets\ProfitChartWidget;
 use App\Filament\Widgets\SalesChartWidget;
+use App\Filament\Widgets\SettingsOverviewWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\TopProductsWidget;
 use App\Filament\Widgets\TopStaffWidget;
