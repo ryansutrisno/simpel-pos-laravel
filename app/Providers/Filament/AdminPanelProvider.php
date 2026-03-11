@@ -44,7 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('POS')
+            ->brandName(fn () => \App\Models\AppSettings::get('app_name', 'Simpel POS'))
             ->spa()
             ->sidebarCollapsibleOnDesktop()
             ->colors([
