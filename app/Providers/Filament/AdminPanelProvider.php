@@ -17,6 +17,7 @@ use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\TopProductsWidget;
 use App\Filament\Widgets\TopStaffWidget;
 use App\Filament\Widgets\TransactionsChart;
+use App\Http\Middleware\LoadAppSettings;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
