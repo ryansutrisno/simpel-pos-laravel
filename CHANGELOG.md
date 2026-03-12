@@ -1,3 +1,10 @@
+## [2.19.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.18.0...v2.19.0) (2026-03-12)
+
+
+### ✨ Features
+
+* add user-stores pivot table for multi-store assignment ([0ff9866](https://github.com/ryansutrisno/simple-pos-laravel/commit/0ff986611a503349cba2c55bfed300896a71a400))
+
 ## [2.18.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.17.1...v2.18.0) (2026-03-12)
 
 
