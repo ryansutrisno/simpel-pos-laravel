@@ -1,3 +1,10 @@
+## [2.18.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.17.1...v2.18.0) (2026-03-12)
+
+
+### ✨ Features
+
+* implement multi-store support ([ea6b4b6](https://github.com/ryansutrisno/simple-pos-laravel/commit/ea6b4b600b86eb199a96283fd81df0ca33a6a9c6))
+
 ## [2.17.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.17.0...v2.17.1) (2026-03-12)
 
 
