@@ -359,7 +359,7 @@
                         <option value="cash">Tunai</option>
                         <option value="transfer">Transfer Bank</option>
                         <option value="qris">QRIS Statis</option>
-                        @if($store?->payment_gateway_enabled)
+                        @if($this->paymentGatewayConfig)
                         <option value="digital">QRIS/Invoice Digital</option>
                         @endif
                     </select>

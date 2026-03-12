@@ -195,6 +195,13 @@ class Pos extends Component
         return $this->selectedCustomer?->points ?? 0;
     }
 
+    public function getPaymentGatewayConfigProperty()
+    {
+        return \App\Models\PaymentGatewayConfig::where('store_id', $this->store?->id ?? 1)
+            ->where('is_active', true)
+            ->first();
+    }
+
     public function getMaxRedeemablePoints(): int
     {
         if (! $this->selectedCustomer) {
