@@ -1,3 +1,22 @@
+## [2.17.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.16.0...v2.17.0) (2026-03-12)
+
+
+### ✨ Features
+
+* **settings:** add app_logo and favicon columns to app_settings ([143c7df](https://github.com/ryansutrisno/simple-pos-laravel/commit/143c7df146b08eb0953eeac5553e901a368e7a33))
+* **settings:** add dynamic APP_NAME from database ([add10e0](https://github.com/ryansutrisno/simple-pos-laravel/commit/add10e08427b6b85003caf6f0f7a9782997dab3e))
+* **settings:** add dynamic brandLogo from AppSettings ([21bbc62](https://github.com/ryansutrisno/simple-pos-laravel/commit/21bbc62b25d33c89fd1e271d9660625108871654))
+
+
+### 🐛 Bug Fixes
+
+* **settings:** add forStore scope to PaymentGatewayConfig ([110b525](https://github.com/ryansutrisno/simple-pos-laravel/commit/110b525886ace00d9a5cecc26542f886c34f63a0))
+* **settings:** add missing import for LoadAppSettings middleware ([3023861](https://github.com/ryansutrisno/simple-pos-laravel/commit/3023861057718e8ab465b715467c8539f37268c0))
+* **settings:** add missing import for SettingsOverviewWidget ([3ccf05a](https://github.com/ryansutrisno/simple-pos-laravel/commit/3ccf05a6c433476c763d307e139648fedf6c2340))
+* **settings:** add redirect after save to refresh brand ([e099ee9](https://github.com/ryansutrisno/simple-pos-laravel/commit/e099ee9b05d16ef8d1c30aa4199ef50a8aa25edb))
+* **settings:** clear cache and update config immediately after save ([08fe22a](https://github.com/ryansutrisno/simple-pos-laravel/commit/08fe22aff9050a0aede167b6bbe408603f9fe42d))
+* **settings:** use dynamic brandName from AppSettings ([c413088](https://github.com/ryansutrisno/simple-pos-laravel/commit/c413088a5a24490e5350d057430522ab278f4246))
+
 ## [2.16.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.15.8...v2.16.0) (2026-03-10)
 
 
