@@ -65,7 +65,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => Blade::render("@vite('resources/js/bluetooth-printer.js')")
             )
             ->renderHook(
-                'panels::topbar.end',
+                'panels::topbar.start',
                 fn (): string => Blade::render('<livewire:store-switcher />')
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

@@ -6,6 +6,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -82,5 +83,42 @@ class User extends Authenticatable implements FilamentUser
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('super_admin');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function stores(): BelongsToMany
+    {
+        return $this->belongsToMany(Store::class, 'user_stores');
+    }
+
+    public function assignedStores()
+    {
+        if ($this->isSuperAdmin() || $this->isAdmin()) {
+            return Store::all();
+        }
+
+        return $this->stores;
+    }
+
+    public function canAccessStore(int $storeId): bool
+    {
+        if ($this->isSuperAdmin() || $this->isAdmin()) {
+            return true;
+        }
+
+        return $this->stores()->where('store_id', $storeId)->exists();
+    }
+
+    public function hasAnyStore(): bool
+    {
+        if ($this->isSuperAdmin() || $this->isAdmin()) {
+            return Store::exists();
+        }
+
+        return $this->stores()->exists();
     }
 }

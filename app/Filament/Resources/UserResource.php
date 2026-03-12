@@ -60,7 +60,27 @@ class UserResource extends Resource
                             ->relationship('roles', 'name')
                             ->multiple()
                             ->preload()
-                            ->searchable(),
+                            ->searchable()
+                            ->live()
+                            ->afterStateUpdated(function (callable $set) {
+                                $set('stores', []);
+                            }),
+                    ]),
+
+                Forms\Components\Section::make('Store Assignment')
+                    ->schema([
+                        Forms\Components\Placeholder::make('store_info')
+                            ->content('Super Admin dan Admin dapat mengakses semua toko secara otomatis.')
+                            ->visible(fn (callable $get) => collect($get('roles'))->contains('super_admin') || collect($get('roles'))->contains('admin')),
+
+                        Forms\Components\Select::make('stores')
+                            ->label('Toko yang Di-assign')
+                            ->relationship('stores', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn (callable $get) => ! collect($get('roles'))->contains('super_admin') && ! collect($get('roles'))->contains('admin'))
+                            ->helperText('Pilih toko yang dapat diakses oleh pengguna ini.'),
                     ]),
             ]);
     }

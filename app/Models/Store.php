@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
@@ -55,9 +56,14 @@ class Store extends Model
         return $this->hasMany(ReceiptTemplate::class);
     }
 
-    public function users(): HasMany
+    public function currentStoreUsers(): HasMany
     {
         return $this->hasMany(User::class, 'current_store_id');
+    }
+
+    public function assignedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_stores');
     }
 
     public function productStocks(): HasMany

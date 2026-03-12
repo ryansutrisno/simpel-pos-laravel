@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\Store;
 use App\Services\CurrentStoreService;
 use Livewire\Component;
 
@@ -22,15 +21,11 @@ class StoreSwitcher extends Component
 
     public function loadStores(): void
     {
-        $user = auth()->user();
+        $storeService = app(CurrentStoreService::class);
+        $stores = $storeService->getAvailableStores();
 
-        if ($user->isSuperAdmin()) {
-            $this->stores = Store::pluck('name', 'id')->toArray();
-            $this->showSwitcher = count($this->stores) > 1;
-        } else {
-            $this->stores = Store::where('id', $user->current_store_id)->pluck('name', 'id')->toArray();
-            $this->showSwitcher = false;
-        }
+        $this->stores = $stores->pluck('name', 'id')->toArray();
+        $this->showSwitcher = count($this->stores) > 1;
     }
 
     public function switchStore(): void
@@ -39,13 +34,13 @@ class StoreSwitcher extends Component
             return;
         }
 
-        $user = auth()->user();
+        $storeService = app(CurrentStoreService::class);
 
-        if (! $user->isSuperAdmin()) {
+        if (! $storeService->canAccessStore($this->selectedStoreId)) {
             return;
         }
 
-        app(CurrentStoreService::class)->set($this->selectedStoreId);
+        $storeService->set($this->selectedStoreId);
 
         $this->dispatch('store-changed');
 

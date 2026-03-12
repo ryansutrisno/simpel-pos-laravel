@@ -33,6 +33,10 @@ class CurrentStoreService
     {
         $storeId = $store instanceof Store ? $store->id : $store;
 
+        if (auth()->check() && ! $this->canAccessStore($storeId)) {
+            return;
+        }
+
         Session::put(self::SESSION_KEY, $storeId);
 
         if (auth()->check()) {
@@ -55,8 +59,60 @@ class CurrentStoreService
         return auth()->check() && auth()->user()->isSuperAdmin();
     }
 
+    public function isAdmin(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
+    }
+
     public function canAccessAllStores(): bool
     {
-        return $this->isSuperAdmin();
+        return $this->isSuperAdmin() || $this->isAdmin();
+    }
+
+    public function canAccessStore(int $storeId): bool
+    {
+        if (! auth()->check()) {
+            return false;
+        }
+
+        return auth()->user()->canAccessStore($storeId);
+    }
+
+    public function getAvailableStores()
+    {
+        if (! auth()->check()) {
+            return collect();
+        }
+
+        return auth()->user()->assignedStores();
+    }
+
+    public function getFirstAvailableStore(): ?Store
+    {
+        $stores = $this->getAvailableStores();
+
+        return $stores->first();
+    }
+
+    public function hasAnyStore(): bool
+    {
+        if (! auth()->check()) {
+            return false;
+        }
+
+        return auth()->user()->hasAnyStore();
+    }
+
+    public function initializeForUser(): void
+    {
+        if (! auth()->check() || $this->hasStore()) {
+            return;
+        }
+
+        $store = $this->getFirstAvailableStore();
+
+        if ($store) {
+            $this->set($store);
+        }
     }
 }
