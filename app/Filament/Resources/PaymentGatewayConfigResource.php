@@ -60,10 +60,9 @@ class PaymentGatewayConfigResource extends Resource
                 Forms\Components\Section::make('Konfigurasi Mayar')
                     ->schema([
                         Forms\Components\TextInput::make('api_key')
-                            ->label('API Key')
+                            ->label(fn ($get) => $get('provider') === 'mayar' ? 'Mayar API Key' : 'API Key')
                             ->password()
                             ->revealable()
-                            ->maxLength(255)
                             ->required(),
 
                         Forms\Components\TextInput::make('webhook_url')
@@ -82,7 +81,6 @@ class PaymentGatewayConfigResource extends Resource
                             ->label('Server Key')
                             ->password()
                             ->revealable()
-                            ->maxLength(255)
                             ->required()
                             ->formatStateUsing(fn ($state) => $state ?? '')
                             ->dehydrateStateUsing(fn ($state) => $state ?? ''),
@@ -91,7 +89,6 @@ class PaymentGatewayConfigResource extends Resource
                             ->label('Client Key')
                             ->password()
                             ->revealable()
-                            ->maxLength(255)
                             ->required()
                             ->formatStateUsing(fn ($state) => $state ?? '')
                             ->dehydrateStateUsing(fn ($state) => $state ?? ''),
