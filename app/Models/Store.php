@@ -33,12 +33,6 @@ class Store extends Model
         'tax_enabled',
         'tax_rate',
         'tax_name',
-        // Payment Gateway fields
-        'payment_gateway_enabled',
-        'payment_gateway_provider',
-        'payment_gateway_sandbox',
-        'payment_config',
-        'payment_enabled_methods',
     ];
 
     protected function casts(): array
@@ -53,10 +47,6 @@ class Store extends Model
             'store_credit_never_expires' => 'boolean',
             'tax_enabled' => 'boolean',
             'tax_rate' => 'decimal:2',
-            'payment_gateway_enabled' => 'boolean',
-            'payment_gateway_sandbox' => 'boolean',
-            'payment_config' => 'array',
-            'payment_enabled_methods' => 'array',
         ];
     }
 
