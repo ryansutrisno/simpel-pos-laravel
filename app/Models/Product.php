@@ -97,6 +97,57 @@ class Product extends Model
         return $this->hasMany(ReorderAlert::class);
     }
 
+    public function stocks(): HasMany
+    {
+        return $this->hasMany(ProductStock::class);
+    }
+
+    public function stockForStore(int $storeId): ?ProductStock
+    {
+        return $this->stocks()->where('store_id', $storeId)->first();
+    }
+
+    public function getStockForStore(int $storeId): float
+    {
+        return $this->stockForStore($storeId)?->quantity ?? 0;
+    }
+
+    public function isLowStockForStore(int $storeId): bool
+    {
+        $stock = $this->stockForStore($storeId);
+        if (! $stock) {
+            return true;
+        }
+
+        return $stock->quantity <= $stock->min_stock;
+    }
+
+    public function needsReorderForStore(int $storeId): bool
+    {
+        $stock = $this->stockForStore($storeId);
+        if (! $stock) {
+            return true;
+        }
+
+        return $stock->quantity <= ($this->reorder_point ?? 0);
+    }
+
+    public function scopeLowStockForStore(Builder $query, int $storeId): Builder
+    {
+        return $query->whereHas('stocks', function ($q) use ($storeId) {
+            $q->where('store_id', $storeId)
+                ->whereColumn('quantity', '<=', 'min_stock');
+        });
+    }
+
+    public function scopeNeedsReorderForStore(Builder $query, int $storeId): Builder
+    {
+        return $query->whereHas('stocks', function ($q) use ($storeId) {
+            $q->where('store_id', $storeId)
+                ->whereRaw('quantity <= ?', [$this->reorder_point ?? 0]);
+        });
+    }
+
     public function pendingReorderAlerts(): HasMany
     {
         return $this->reorderAlerts()->where('status', 'pending');

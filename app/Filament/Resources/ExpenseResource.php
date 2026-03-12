@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ExpenseResource\Pages;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\Store;
+use App\Services\CurrentStoreService;
 use App\Services\ExpenseService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class ExpenseResource extends Resource
 {
@@ -54,6 +57,16 @@ class ExpenseResource extends Resource
                             ->createOptionUsing(function (array $data) {
                                 return ExpenseCategory::create($data)->getKey();
                             }),
+
+                        Forms\Components\Select::make('store_id')
+                            ->label('Toko')
+                            ->options(Store::pluck('name', 'id'))
+                            ->default(fn (CurrentStoreService $currentStoreService): ?int => $currentStoreService->getId())
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn (): bool => Auth::user()?->isSuperAdmin() ?? false)
+                            ->dehydrated(),
 
                         Forms\Components\DatePicker::make('expense_date')
                             ->label('Tanggal')
@@ -130,6 +143,12 @@ class ExpenseResource extends Resource
                     ->label('Kategori')
                     ->options(ExpenseCategory::pluck('name', 'id')),
 
+                Tables\Filters\SelectFilter::make('store_id')
+                    ->label('Toko')
+                    ->options(Store::pluck('name', 'id'))
+                    ->searchable()
+                    ->visible(fn (): bool => Auth::user()?->isSuperAdmin() ?? false),
+
                 Tables\Filters\Filter::make('expense_date')
                     ->label('Tanggal')
                     ->form([
@@ -170,9 +189,17 @@ class ExpenseResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+        $query = parent::getEloquentQuery()
             ->with(['category', 'user'])
             ->orderBy('expense_date', 'desc');
+
+        $user = Auth::user();
+
+        if (! $user || ! $user->isSuperAdmin()) {
+            return $query->forCurrentStore();
+        }
+
+        return $query;
     }
 
     public static function getRelations(): array

@@ -15,6 +15,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class StockAdjustmentResource extends Resource
 {
@@ -38,6 +39,13 @@ class StockAdjustmentResource extends Resource
                     ->schema([
                         Forms\Components\Section::make('Informasi Penyesuaian')
                             ->schema([
+                                Forms\Components\Select::make('store_id')
+                                    ->label('Toko')
+                                    ->relationship('store', 'name')
+                                    ->searchable()
+                                    ->required()
+                                    ->default(fn (): ?int => app(\App\Services\CurrentStoreService::class)->getId())
+                                    ->hidden(fn (): bool => ! app(\App\Services\CurrentStoreService::class)->isSuperAdmin()),
                                 Forms\Components\Select::make('type')
                                     ->label('Jenis')
                                     ->options(AdjustmentType::class)
@@ -56,7 +64,7 @@ class StockAdjustmentResource extends Resource
                                     ->default(now())
                                     ->required(),
                             ])
-                            ->columns(3),
+                            ->columns(4),
 
                         Forms\Components\Section::make('Item Produk')
                             ->schema([
@@ -65,7 +73,16 @@ class StockAdjustmentResource extends Resource
                                     ->schema([
                                         Forms\Components\Select::make('product_id')
                                             ->label('Produk')
-                                            ->options(Product::where('is_active', true)->pluck('name', 'id'))
+                                            ->relationship(
+                                                name: 'product',
+                                                titleAttribute: 'name',
+                                                modifyQueryUsing: fn (Builder $query): Builder => $query
+                                                    ->where('is_active', true)
+                                                    ->whereHas('stocks', fn (Builder $stockQuery): Builder => $stockQuery
+                                                        ->forCurrentStore()
+                                                        ->where('quantity', '>', 0)
+                                                    ),
+                                            )
                                             ->searchable()
                                             ->preload()
                                             ->required()
@@ -73,7 +90,7 @@ class StockAdjustmentResource extends Resource
                                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                                 $product = Product::find($state);
                                                 if ($product) {
-                                                    $set('current_stock', $product->stock);
+                                                    $set('current_stock', $product->stocks()->forCurrentStore()->value('quantity') ?? 0);
                                                 }
                                             }),
                                         Forms\Components\TextInput::make('current_stock')
@@ -146,7 +163,7 @@ class StockAdjustmentResource extends Resource
                                 Forms\Components\Select::make('user_id')
                                     ->label('Dibuat Oleh')
                                     ->relationship('user', 'name')
-                                    ->default(auth()->id())
+                                    ->default(Auth::id())
                                     ->required()
                                     ->disabled(),
                             ]),
@@ -231,6 +248,12 @@ class StockAdjustmentResource extends Resource
     public static function getRelations(): array
     {
         return [];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->forCurrentStore();
     }
 
     public static function getPages(): array

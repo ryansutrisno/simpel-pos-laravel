@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,9 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Transaction extends Model
 {
+    use BelongsToStore;
     use HasFactory;
 
     protected $fillable = [
+        'store_id',
         'user_id',
         'customer_id',
         'discount_id',
@@ -124,7 +127,7 @@ class Transaction extends Model
 
     public function isFullyReturned(): bool
     {
-        return $this->items()->where('quantity_returned', '<', \DB::raw('quantity'))->doesntExist();
+        return $this->items()->where('quantity_returned', '<', DB::raw('quantity'))->doesntExist();
     }
 
     public function isTaxEnabled(): bool

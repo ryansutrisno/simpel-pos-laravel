@@ -42,6 +42,7 @@ A simple, modern Point of Sale (POS) system built with Laravel 12, Filament 3, a
 - **Inventory Valuation Report**: Calculate inventory value for tax reporting with FIFO, LIFO, and Weighted Average methods
 - **Purchase Price History**: Track purchase price changes over time with trends and supplier filtering
 - **Payment Gateway Integration**: Accept digital payments via Mayar (QRIS, Invoice) with real-time status updates and webhook support
+- **Multi-Store Support**: Manage multiple stores with per-store stock tracking, separate transactions, store switcher for super admins, and automatic data scoping
 
 ## Tech Stack
 
@@ -273,16 +274,23 @@ app/
 │   ├── Pages/         # Custom pages (POS, Reports, etc.)
 │   └── Widgets/       # Dashboard widgets (Sales Chart, Low Stock Alert, etc.)
 ├── Http/Controllers/   # API and web controllers
-├── Livewire/          # Livewire components (POS, etc.)
+├── Livewire/          # Livewire components (POS, StoreSwitcher, etc.)
 ├── Models/            # Eloquent models
 │   ├── Product.php
+│   ├── ProductStock.php        # Per-store stock tracking
 │   ├── ProductVariant.php     # Product variations
 │   ├── ProductBundle.php      # Bundle headers
 │   ├── BundleItem.php         # Bundle line items
 │   ├── ReorderAlert.php       # Low stock alerts
+│   ├── Concerns/
+│   │   └── BelongsToStore.php # Multi-store trait
 │   └── ...
 ├── Observers/         # Model observers
+├── Scopes/            # Global scopes
+│   └── StoreScope.php # Multi-store global scope
 └── Services/          # Business logic services
+    ├── CurrentStoreService.php # Multi-store context
+    ├── StockService.php        # Stock with multi-store
     ├── VariantService.php     # Variant operations
     ├── BundleService.php      # Bundle management
     ├── ReorderPointService.php # Alert management
@@ -471,6 +479,26 @@ Manages digital payment processing:
 - Automatic transaction status update on payment success
 - Webhook handling for payment callbacks
 - Sandbox mode support for testing
+
+### CurrentStoreService
+Manages multi-store context:
+- `get()` - Get current Store model
+- `getId()` - Get current store ID
+- `set(Store|int)` - Set current store (updates session + user.current_store_id)
+- `hasStore()` - Check if store is set
+- `isSuperAdmin()` - Check if user has super_admin role
+- `canAccessAllStores()` - Check if user can access all stores
+- Session-based store persistence
+- Automatic user assignment to store
+
+### StockService
+Handles stock operations with multi-store support:
+- `addStock($productId, $quantity, $storeId, $variantId)` - Add stock to specific store
+- `subtractStock($productId, $quantity, $storeId, $variantId)` - Subtract stock from specific store
+- `getStock($productId, $storeId, $variantId)` - Get stock for product in store
+- `adjustStock($productId, $quantity, $reason, $storeId)` - Stock adjustment with reason
+- Per-store stock tracking via ProductStock model
+- Automatic low stock detection per store
 
 ## Troubleshooting
 

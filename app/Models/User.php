@@ -5,6 +5,7 @@ namespace App\Models;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -24,6 +25,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'current_store_id',
     ];
 
     protected $hidden = [
@@ -54,6 +56,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Shift::class);
     }
 
+    public function currentStore(): BelongsTo
+    {
+        return $this->belongsTo(Store::class, 'current_store_id');
+    }
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
@@ -70,5 +77,10 @@ class User extends Authenticatable implements FilamentUser
     public function hasActiveShift(): bool
     {
         return $this->activeShift() !== null;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
     }
 }

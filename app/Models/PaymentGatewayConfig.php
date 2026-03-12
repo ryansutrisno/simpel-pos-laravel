@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Crypt;
 
 class PaymentGatewayConfig extends Model
 {
+    use BelongsToStore;
     use HasFactory;
 
     public const PROVIDER_MAYAR = 'mayar';
@@ -38,11 +39,6 @@ class PaymentGatewayConfig extends Model
         ];
     }
 
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
-
     public function setApiKeyAttribute(?string $value): void
     {
         if ($value) {
@@ -68,11 +64,6 @@ class PaymentGatewayConfig extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    public function scopeForStore($query, int $storeId)
-    {
-        return $query->where('store_id', $storeId);
     }
 
     public function scopeForProvider($query, string $provider)

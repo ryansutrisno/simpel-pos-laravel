@@ -55,6 +55,16 @@ class Store extends Model
         return $this->hasMany(ReceiptTemplate::class);
     }
 
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'current_store_id');
+    }
+
+    public function productStocks(): HasMany
+    {
+        return $this->hasMany(ProductStock::class);
+    }
+
     public function activeReceiptTemplate(): BelongsTo
     {
         return $this->belongsTo(ReceiptTemplate::class, 'receipt_template_id');

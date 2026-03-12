@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\OpnameStatus;
 use App\Enums\StockMovementType;
+use App\Models\Concerns\BelongsToStore;
 use App\Services\StockService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,9 +14,11 @@ use Illuminate\Support\Facades\Auth;
 
 class StockOpname extends Model
 {
+    use BelongsToStore;
     use HasFactory;
 
     protected $fillable = [
+        'store_id',
         'opname_number',
         'status',
         'opname_date',

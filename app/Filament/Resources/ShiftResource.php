@@ -4,6 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ShiftResource\Pages;
 use App\Models\Shift;
+use App\Models\Store;
+use App\Models\User;
+use App\Services\CurrentStoreService;
 use App\Services\ShiftService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -11,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class ShiftResource extends Resource
 {
@@ -38,15 +42,29 @@ class ShiftResource extends Resource
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->default(fn () => auth()->id())
-                            ->disabled(fn () => ! auth()->user()->hasRole(['admin', 'super_admin']))
-                            ->hidden(fn () => ! auth()->user()->hasRole(['admin', 'super_admin']))
+                            ->default(fn () => Auth::id())
+                            ->disabled(fn () => ! (static::currentUser()?->hasRole(['admin', 'super_admin']) ?? false))
+                            ->hidden(fn () => ! (static::currentUser()?->hasRole(['admin', 'super_admin']) ?? false))
                             ->disabledOn('edit'),
 
                         Forms\Components\Placeholder::make('kasir_name')
                             ->label('Kasir')
-                            ->content(fn () => auth()->user()->name)
-                            ->hidden(fn () => auth()->user()->hasRole(['admin', 'super_admin'])),
+                            ->content(fn () => static::currentUser()?->name ?? '-')
+                            ->hidden(fn () => static::currentUser()?->hasRole(['admin', 'super_admin']) ?? false),
+
+                        Forms\Components\Select::make('store_id')
+                            ->label('Toko')
+                            ->options(Store::pluck('name', 'id'))
+                            ->default(fn (CurrentStoreService $currentStoreService): ?int => $currentStoreService->getId())
+                            ->required(fn (): bool => static::currentUser()?->isSuperAdmin() ?? false)
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn (): bool => static::currentUser()?->isSuperAdmin() ?? false)
+                            ->dehydrated(fn (): bool => static::currentUser()?->isSuperAdmin() ?? false),
+
+                        Forms\Components\Hidden::make('store_id')
+                            ->default(fn (CurrentStoreService $currentStoreService): ?int => $currentStoreService->getId())
+                            ->dehydrated(fn (): bool => ! (static::currentUser()?->isSuperAdmin() ?? false)),
 
                         Forms\Components\Select::make('shift_type')
                             ->label('Tipe Shift')
@@ -254,6 +272,12 @@ class ShiftResource extends Resource
                         'closed' => 'Selesai',
                     ]),
 
+                Tables\Filters\SelectFilter::make('store_id')
+                    ->label('Toko')
+                    ->options(Store::pluck('name', 'id'))
+                    ->searchable()
+                    ->visible(fn (): bool => static::currentUser()?->isSuperAdmin() ?? false),
+
                 Tables\Filters\Filter::make('shift_date')
                     ->label('Tanggal')
                     ->form([
@@ -300,6 +324,17 @@ class ShiftResource extends Resource
         return parent::getEloquentQuery()
             ->with('user')
             ->orderBy('shift_date', 'desc');
+    }
+
+    protected static function currentUser(): ?User
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            return null;
+        }
+
+        return $user;
     }
 
     public static function getRelations(): array

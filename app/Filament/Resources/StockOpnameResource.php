@@ -5,7 +5,10 @@ namespace App\Filament\Resources;
 use App\Enums\OpnameStatus;
 use App\Filament\Resources\StockOpnameResource\Pages;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\Models\StockOpname;
+use App\Models\Store;
+use App\Services\CurrentStoreService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -38,6 +41,18 @@ class StockOpnameResource extends Resource
                     ->schema([
                         Forms\Components\Section::make('Informasi Opname')
                             ->schema([
+                                Forms\Components\Select::make('store_id')
+                                    ->label('Store')
+                                    ->options(Store::query()->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->default(fn (): ?int => app(CurrentStoreService::class)->getId())
+                                    ->visible(fn (): bool => app(CurrentStoreService::class)->isSuperAdmin())
+                                    ->live(),
+                                Forms\Components\Hidden::make('store_id')
+                                    ->default(fn (): ?int => app(CurrentStoreService::class)->getId())
+                                    ->visible(fn (): bool => ! app(CurrentStoreService::class)->isSuperAdmin()),
                                 Forms\Components\DatePicker::make('opname_date')
                                     ->label('Tanggal Opname')
                                     ->default(now())
@@ -51,16 +66,46 @@ class StockOpnameResource extends Resource
                                     ->schema([
                                         Forms\Components\Select::make('product_id')
                                             ->label('Produk')
-                                            ->options(Product::where('is_active', true)->pluck('name', 'id'))
+                                            ->options(function (Forms\Get $get): array {
+                                                $currentStoreService = app(CurrentStoreService::class);
+                                                $storeId = $get('../../store_id') ?? $currentStoreService->getId();
+
+                                                $availableProductIds = ProductStock::query()
+                                                    ->when(
+                                                        $storeId,
+                                                        fn (Builder $query): Builder => $query->where('store_id', $storeId),
+                                                        fn (Builder $query): Builder => $query->forCurrentStore()
+                                                    )
+                                                    ->where('quantity', '>', 0)
+                                                    ->pluck('product_id');
+
+                                                return Product::query()
+                                                    ->where('is_active', true)
+                                                    ->whereIn('id', $availableProductIds)
+                                                    ->orderBy('name')
+                                                    ->pluck('name', 'id')
+                                                    ->toArray();
+                                            })
                                             ->searchable()
                                             ->preload()
                                             ->required()
                                             ->live()
-                                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                                $product = Product::find($state);
-                                                if ($product) {
-                                                    $set('system_stock', $product->stock);
+                                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                                $currentStoreService = app(CurrentStoreService::class);
+                                                $storeId = $get('../../store_id') ?? $currentStoreService->getId();
+
+                                                if (! $state || ! $storeId) {
+                                                    $set('system_stock', 0);
+
+                                                    return;
                                                 }
+
+                                                $systemStock = ProductStock::query()
+                                                    ->where('product_id', $state)
+                                                    ->where('store_id', $storeId)
+                                                    ->value('quantity');
+
+                                                $set('system_stock', $systemStock ?? 0);
                                             }),
                                         Forms\Components\TextInput::make('system_stock')
                                             ->label('Stok Sistem')
@@ -140,7 +185,6 @@ class StockOpnameResource extends Resource
                                 Forms\Components\Select::make('user_id')
                                     ->label('Dibuat Oleh')
                                     ->relationship('user', 'name')
-                                    ->default(auth()->id())
                                     ->required()
                                     ->disabled(),
                             ]),
@@ -251,6 +295,12 @@ class StockOpnameResource extends Resource
     public static function getRelations(): array
     {
         return [];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->forCurrentStore();
     }
 
     public static function getPages(): array

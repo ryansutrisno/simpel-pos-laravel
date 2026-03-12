@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PrinterConfig extends Model
 {
+    use BelongsToStore;
     use HasFactory;
     use SoftDeletes;
 
@@ -37,11 +38,6 @@ class PrinterConfig extends Model
         ];
     }
 
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
-
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
@@ -50,11 +46,6 @@ class PrinterConfig extends Model
     public function scopeDefault($query)
     {
         return $query->where('is_default', true);
-    }
-
-    public function scopeForStore($query, int $storeId)
-    {
-        return $query->where('store_id', $storeId);
     }
 
     public function isDefault(): bool

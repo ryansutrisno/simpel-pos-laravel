@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\AppSettings;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\FinancialRecord;
@@ -11,12 +12,14 @@ use App\Models\SuspendedTransaction;
 use App\Models\Transaction;
 use App\Models\TransactionPayment;
 use App\Services\BundleService;
+use App\Services\CurrentStoreService;
 use App\Services\DiscountService;
 use App\Services\PointService;
 use App\Services\ReceiptTemplateService;
 use App\Services\ReorderPointService;
 use App\Services\ShiftService;
 use App\Services\TaxService;
+use App\Services\TransactionService;
 use App\Services\VariantService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -66,6 +69,12 @@ class Pos extends Component
 
     public $voucherError = null;
 
+    public $customerId = null;
+
+    public $discountAmount = 0;
+
+    public $showCart = true;
+
     public $showSuspendedModal = false;
 
     public $suspendedTransactions = [];
@@ -112,19 +121,22 @@ class Pos extends Component
 
     protected VariantService $variantService;
 
-    public function boot(PointService $pointService, DiscountService $discountService, TaxService $taxService, BundleService $bundleService, VariantService $variantService): void
+    protected TransactionService $transactionService;
+
+    public function boot(PointService $pointService, DiscountService $discountService, TaxService $taxService, BundleService $bundleService, VariantService $variantService, TransactionService $transactionService): void
     {
         $this->pointService = $pointService;
         $this->discountService = $discountService;
         $this->taxService = $taxService;
         $this->bundleService = $bundleService;
         $this->variantService = $variantService;
+        $this->transactionService = $transactionService;
     }
 
     public function mount()
     {
         $this->categories = Category::all();
-        $this->store = \App\Models\Store::first();
+        $this->store = app(CurrentStoreService::class)->get() ?? \App\Models\Store::first();
 
         $templateService = new ReceiptTemplateService;
         $this->availableTemplates = $templateService->getAvailableTemplates($this->store);
@@ -904,7 +916,7 @@ class Pos extends Component
             $discountId = $this->appliedVoucher->id;
         }
 
-        $transaction = Transaction::create([
+        $transaction = $this->transactionService->create([
             'user_id' => Auth::id(),
             'shift_id' => ShiftService::getActiveShift(Auth::id())?->id,
             'customer_id' => $this->selectedCustomerId,
@@ -941,12 +953,7 @@ class Pos extends Component
                 'subtotal' => ($item['final_price'] ?? $item['selling_price']) * $item['quantity'],
             ]);
 
-            // Decrement variant stock if variant, otherwise product stock
-            if (! empty($item['variant_id'])) {
-                $this->variantService->decrementStock($item['variant_id'], $item['quantity']);
-            } else {
-                Product::find($item['product_id'])->decrement('stock', $item['quantity']);
-            }
+            $this->transactionService->deductStockForItem($item, $transaction->store_id);
         }
 
         // Check for reorder alerts after stock decrement
@@ -1018,7 +1025,7 @@ class Pos extends Component
             $discountId = $this->appliedVoucher->id;
         }
 
-        $transaction = Transaction::create([
+        $transaction = $this->transactionService->create([
             'user_id' => Auth::id(),
             'shift_id' => ShiftService::getActiveShift(Auth::id())?->id,
             'customer_id' => $this->selectedCustomerId,
@@ -1055,12 +1062,7 @@ class Pos extends Component
                 'subtotal' => ($item['final_price'] ?? $item['selling_price']) * $item['quantity'],
             ]);
 
-            // Decrement variant stock if variant, otherwise product stock
-            if (! empty($item['variant_id'])) {
-                $this->variantService->decrementStock($item['variant_id'], $item['quantity']);
-            } else {
-                Product::find($item['product_id'])->decrement('stock', $item['quantity']);
-            }
+            $this->transactionService->deductStockForItem($item, $transaction->store_id);
         }
 
         // Check for reorder alerts after stock decrement
@@ -1127,7 +1129,7 @@ class Pos extends Component
             $discountId = $this->appliedVoucher->id;
         }
 
-        $transaction = Transaction::create([
+        $transaction = $this->transactionService->create([
             'user_id' => Auth::id(),
             'shift_id' => ShiftService::getActiveShift(Auth::id())?->id,
             'customer_id' => $this->selectedCustomerId,
@@ -1160,12 +1162,7 @@ class Pos extends Component
                 'subtotal' => ($item['final_price'] ?? $item['selling_price']) * $item['quantity'],
             ]);
 
-            // Decrement variant stock if variant, otherwise product stock
-            if (! empty($item['variant_id'])) {
-                $this->variantService->decrementStock($item['variant_id'], $item['quantity']);
-            } else {
-                Product::find($item['product_id'])->decrement('stock', $item['quantity']);
-            }
+            $this->transactionService->deductStockForItem($item, $transaction->store_id);
         }
 
         // Check for reorder alerts after stock decrement
@@ -1252,7 +1249,7 @@ class Pos extends Component
 
     public function getTemplatesProperty()
     {
-        return $this->availableTemplates->map(function ($template) {
+        return collect($this->availableTemplates)->map(function ($template) {
             return [
                 'id' => $template->id,
                 'name' => $template->name,
@@ -1291,7 +1288,7 @@ class Pos extends Component
             $discountAmount = $this->discountAmount;
             $total = $this->getTotal();
 
-            $transaction = Transaction::create([
+            $transaction = $this->transactionService->create([
                 'user_id' => Auth::id(),
                 'customer_id' => $this->customerId ?: null,
                 'total' => $total,
@@ -1346,7 +1343,7 @@ class Pos extends Component
 
             $shift = ShiftService::getActiveShift(Auth::id());
 
-            $transaction = Transaction::create([
+            $transaction = $this->transactionService->create([
                 'user_id' => Auth::id(),
                 'shift_id' => $shift?->id,
                 'customer_id' => $this->selectedCustomerId ?: null,

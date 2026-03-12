@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\ShiftResource\Pages;
 
 use App\Filament\Resources\ShiftResource;
+use App\Services\CurrentStoreService;
 use App\Services\ShiftService;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateShift extends CreateRecord
 {
@@ -14,7 +16,8 @@ class CreateShift extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['user_id'] = auth()->id();
+        $data['user_id'] = Auth::id();
+        $data['store_id'] ??= app(CurrentStoreService::class)->getId();
         $data['opened_at'] = now();
 
         return $data;
@@ -22,7 +25,7 @@ class CreateShift extends CreateRecord
 
     protected function beforeCreate(): void
     {
-        if (! ShiftService::canOpenShift(auth()->id())) {
+        if (! ShiftService::canOpenShift(Auth::id())) {
             $this->halt();
             \Filament\Notifications\Notification::make()
                 ->title('Tidak bisa membuka shift')

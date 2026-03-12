@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ReceiptTemplate extends Model
 {
+    use BelongsToStore;
     use HasFactory;
 
     protected $fillable = [
@@ -25,17 +26,6 @@ class ReceiptTemplate extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the store that owns the receipt template.
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
-
-    /**
-     * Get the default template.
-     */
     public static function getDefaultTemplate(): ?self
     {
         return static::where('is_default', true)
@@ -43,9 +33,6 @@ class ReceiptTemplate extends Model
             ->first();
     }
 
-    /**
-     * Get active templates for a store.
-     */
     public static function getActiveTemplates(?int $storeId = null): \Illuminate\Database\Eloquent\Collection
     {
         return static::where('is_active', true)
@@ -59,9 +46,6 @@ class ReceiptTemplate extends Model
             ->get();
     }
 
-    /**
-     * Validate template data.
-     */
     public function validateTemplateData(): bool
     {
         $required = ['header', 'body', 'footer'];

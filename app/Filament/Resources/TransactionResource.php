@@ -3,7 +3,9 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
+use App\Models\Store;
 use App\Models\Transaction;
+use App\Services\CurrentStoreService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,6 +15,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionResource extends Resource
 {
@@ -38,6 +41,15 @@ class TransactionResource extends Resource
                                     ->relationship('user', 'name')
                                     ->label('Kasir')
                                     ->required(),
+                                Forms\Components\Select::make('store_id')
+                                    ->label('Toko')
+                                    ->options(Store::pluck('name', 'id'))
+                                    ->default(fn (CurrentStoreService $currentStoreService): ?int => $currentStoreService->getId())
+                                    ->required()
+                                    ->searchable()
+                                    ->preload()
+                                    ->hidden(fn (): bool => ! (Auth::user()?->isSuperAdmin() ?? false))
+                                    ->dehydrated(),
                                 Forms\Components\Select::make('customer_id')
                                     ->relationship('customer', 'name')
                                     ->label('Pelanggan')
@@ -255,6 +267,11 @@ class TransactionResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                SelectFilter::make('store_id')
+                    ->label('Toko')
+                    ->options(Store::pluck('name', 'id'))
+                    ->searchable()
+                    ->visible(fn (): bool => Auth::user()?->isSuperAdmin() ?? false),
                 SelectFilter::make('customer_id')
                     ->label('Pelanggan')
                     ->relationship('customer', 'name')
@@ -304,7 +321,7 @@ class TransactionResource extends Resource
                     ->icon('heroicon-o-printer')
                     ->color('success')
                     ->requiresConfirmation(false)
-                    ->url(fn ($record): string => '#')
+                    ->url(fn (): string => '#')
                     ->extraAttributes(fn ($record): array => [
                         'onclick' => "window.printTransactionReceipt({$record->id}); return false;",
                     ]),
