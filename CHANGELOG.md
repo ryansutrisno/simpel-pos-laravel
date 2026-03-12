@@ -1,3 +1,22 @@
+## [2.17.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.17.0...v2.17.1) (2026-03-12)
+
+
+### 🐛 Bug Fixes
+
+* remove maxLength validation from API Key fields ([4481838](https://github.com/ryansutrisno/simple-pos-laravel/commit/44818386eab153ba9677cde6b1b445fdae0b6f09))
+
+
+### ♻️ Refactoring
+
+* migrate payment gateway from Store to PaymentGatewayConfig ([947379c](https://github.com/ryansutrisno/simple-pos-laravel/commit/947379cc32106ff242cd9255d9525012c3c99ed6))
+* remove payment gateway columns from stores table ([7e76349](https://github.com/ryansutrisno/simple-pos-laravel/commit/7e76349a891df9e457acbd634b56bf034da95a92))
+* update POS to use PaymentGatewayConfig instead of Store ([142e465](https://github.com/ryansutrisno/simple-pos-laravel/commit/142e465d02e33dc77e2da0428018255ca2eb207a))
+
+
+### 🔧 Maintenance
+
+* configure Claude MCP settings and update documentation ([926058e](https://github.com/ryansutrisno/simple-pos-laravel/commit/926058e7d847348a96cfd2d538d1156ee024d9b1))
+
 ## [2.17.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.16.0...v2.17.0) (2026-03-12)
 
 
