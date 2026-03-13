@@ -11,6 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class PrinterConfigResource extends Resource
 {
@@ -25,6 +26,11 @@ class PrinterConfigResource extends Resource
     protected static ?string $navigationGroup = 'Pengaturan';
 
     protected static ?int $navigationSort = 2;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()->can('view_any_printer::config');
+    }
 
     public static function form(Form $form): Form
     {

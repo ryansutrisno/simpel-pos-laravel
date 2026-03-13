@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentGatewayConfigResource extends Resource
 {
@@ -23,6 +24,11 @@ class PaymentGatewayConfigResource extends Resource
     protected static ?string $navigationGroup = 'Pengaturan';
 
     protected static ?int $navigationSort = 3;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()->can('view_any_payment::gateway::config');
+    }
 
     public static function form(Form $form): Form
     {

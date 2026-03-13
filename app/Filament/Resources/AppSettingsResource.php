@@ -7,6 +7,7 @@ use App\Models\AppSettings;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 
 class AppSettingsResource extends Resource
 {
@@ -34,7 +35,7 @@ class AppSettingsResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return true;
+        return Auth::user()->can('view_any_app::settings');
     }
 
     public static function form(Form $form): Form

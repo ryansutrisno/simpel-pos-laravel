@@ -13,6 +13,15 @@ class ShieldSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
+            // App Settings (singleton - only view and update)
+            'view_app::settings', 'view_any_app::settings', 'update_app::settings',
+            // Printer Config
+            'view_printer::config', 'view_any_printer::config', 'create_printer::config', 'update_printer::config', 'restore_printer::config', 'restore_any_printer::config', 'replicate_printer::config', 'reorder_printer::config', 'delete_printer::config', 'delete_any_printer::config', 'force_delete_printer::config', 'force_delete_any_printer::config',
+            // Payment Gateway Config
+            'view_payment::gateway::config', 'view_any_payment::gateway::config', 'create_payment::gateway::config', 'update_payment::gateway::config', 'restore_payment::gateway::config', 'restore_any_payment::gateway::config', 'replicate_payment::gateway::config', 'reorder_payment::gateway::config', 'delete_payment::gateway::config', 'delete_any_payment::gateway::config', 'force_delete_payment::gateway::config', 'force_delete_any_payment::gateway::config',
+            // Product Stock
+            'view_product::stock', 'view_any_product::stock', 'create_product::stock', 'update_product::stock', 'restore_product::stock', 'restore_any_product::stock', 'replicate_product::stock', 'reorder_product::stock', 'delete_product::stock', 'delete_any_product::stock', 'force_delete_product::stock', 'force_delete_any_product::stock',
+            // Category
             'view_category', 'view_any_category', 'create_category', 'update_category', 'restore_category', 'restore_any_category', 'replicate_category', 'reorder_category', 'delete_category', 'delete_any_category', 'force_delete_category', 'force_delete_any_category',
             'view_debt::payment', 'view_any_debt::payment', 'create_debt::payment', 'update_debt::payment', 'restore_debt::payment', 'restore_any_debt::payment', 'replicate_debt::payment', 'reorder_debt::payment', 'delete_debt::payment', 'delete_any_debt::payment', 'force_delete_debt::payment', 'force_delete_any_debt::payment',
             'view_financial::record', 'view_any_financial::record', 'create_financial::record', 'update_financial::record', 'restore_financial::record', 'restore_any_financial::record', 'replicate_financial::record', 'reorder_financial::record', 'delete_financial::record', 'delete_any_financial::record', 'force_delete_financial::record', 'force_delete_any_financial::record',
