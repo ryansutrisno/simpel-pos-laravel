@@ -1,3 +1,10 @@
+## [2.19.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.19.0...v2.19.1) (2026-03-13)
+
+
+### 🐛 Bug Fixes
+
+* restrict Kasir access to App Settings, Printer, and Payment Gateway ([c9e4703](https://github.com/ryansutrisno/simple-pos-laravel/commit/c9e4703d23d5e3a3b17da6fb74619b8365fdc94d))
+
 ## [2.19.0](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.18.0...v2.19.0) (2026-03-12)
 
 
