@@ -1,3 +1,10 @@
+## [2.19.2](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.19.1...v2.19.2) (2026-05-26)
+
+
+### ♻️ Refactoring
+
+* **pos:** fix overflow and improve responsive layout ([26ce43d](https://github.com/ryansutrisno/simpel-pos-laravel/commit/26ce43d5503602fd3795f68a50c3f48f870e00ab))
+
 ## [2.19.1](https://github.com/ryansutrisno/simple-pos-laravel/compare/v2.19.0...v2.19.1) (2026-03-13)
 
 
