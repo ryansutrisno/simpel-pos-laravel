@@ -36,9 +36,9 @@
         </div>
     </div>
     <!-- Main Content -->
-    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+    <div class="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
         <!-- Kolom Kiri - Produk -->
-        <div class="w-full md:w-3/4 p-4 overflow-y-auto">
+        <div class="w-full lg:w-2/3 xl:w-3/4 p-3 md:p-4 min-h-0 h-[50vh] lg:h-auto overflow-y-auto">
             <!-- Barcode Scanner Input -->
             <div class="mb-4">
                 <div class="relative" x-data="{ focused: false }"
@@ -91,7 +91,7 @@
                 </div>
             </div>
             <!-- Grid Produk -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
                 @forelse($products as $product)
                 <div
                     class="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow p-2">
@@ -134,9 +134,8 @@
                 @endforelse </div>
         </div>
         <!-- Kolom Kanan - Keranjang -->
-        <div
-            class="w-full md:w-1/4 bg-white dark:bg-gray-800 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 flex flex-col h-[40vh] md:h-auto">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10">
+        <div class="w-full lg:w-1/3 xl:w-1/4 bg-white dark:bg-gray-800 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 flex flex-col min-h-0 h-[50vh] lg:h-auto overflow-hidden">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Keranjang Belanja</h2>
                     <div class="flex items-center gap-2">
@@ -163,7 +162,7 @@
                     </div>
                 </div>
             </div>
-            <div class="flex-1 overflow-y-auto p-4">
+            <div class="flex-1 min-h-0 overflow-y-auto p-4">
                 @if(count($cart) > 0)
                 <div class="space-y-3">
                 @foreach($cart as $index => $item)
@@ -246,8 +245,7 @@
                 </div>
                 @endif
                 @if(count($cart) > 0)
-                <div
-                class="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 sticky bottom-0">
+                <div class="border-t border-gray-200 dark:border-gray-700 p-3 md:p-4 bg-white dark:bg-gray-800 flex-shrink-0 max-h-[30vh] lg:max-h-[35vh] xl:max-h-none overflow-y-auto">
                 <!-- Customer Selection -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pelanggan
