@@ -1,3 +1,10 @@
+## [2.21.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.20.0...v2.21.0) (2026-09-13)
+
+
+### ✨ Features
+
+* **auth:** show demo account credentials below login form ([8580b11](https://github.com/ryansutrisno/simpel-pos-laravel/commit/8580b119b288b902757990c4aec0380a9c898974))
+
 ## [2.20.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.19.2...v2.20.0) (2026-09-05)
 
 
