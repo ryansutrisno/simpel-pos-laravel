@@ -1,3 +1,10 @@
+## [2.23.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.22.0...v2.23.0) (2026-09-15)
+
+
+### ✨ Features
+
+* **serena:** add simpel-pos project config and gitignore ([9a77152](https://github.com/ryansutrisno/simpel-pos-laravel/commit/9a771520aaab32bc261490c980b92db77a3e8d5e))
+
 ## [2.22.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.21.0...v2.22.0) (2026-09-15)
 
 
