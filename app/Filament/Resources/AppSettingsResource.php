@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AppSettingsResource\Pages;
 use App\Models\AppSettings;
+use App\Support\ImageCompressor;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 
 class AppSettingsResource extends Resource
@@ -53,13 +55,16 @@ class AppSettingsResource extends Resource
                         Forms\Components\FileUpload::make('app_logo')
                             ->label('Logo Aplikasi')
                             ->image()
+                            ->disk('r2')
                             ->directory('app-logos')
                             ->maxSize(1024)
+                            ->saveUploadedFileUsing(fn (UploadedFile $file): string => ImageCompressor::compressToWebp($file, 'r2', 'app-logos'))
                             ->nullable(),
 
                         Forms\Components\FileUpload::make('favicon')
                             ->label('Favicon')
                             ->image()
+                            ->disk('r2')
                             ->directory('app-favicons')
                             ->maxSize(512)
                             ->nullable(),

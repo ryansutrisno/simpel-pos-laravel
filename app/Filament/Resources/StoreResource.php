@@ -5,11 +5,13 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StoreResource\Pages;
 use App\Models\ReceiptTemplate;
 use App\Models\Store;
+use App\Support\ImageCompressor;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Http\UploadedFile;
 
 class StoreResource extends Resource
 {
@@ -47,8 +49,10 @@ class StoreResource extends Resource
                         Forms\Components\FileUpload::make('logo_path')
                             ->label('Logo Toko')
                             ->image()
+                            ->disk('r2')
                             ->directory('store-logos')
                             ->maxSize(1024)
+                            ->saveUploadedFileUsing(fn (UploadedFile $file): string => ImageCompressor::compressToWebp($file, 'r2', 'store-logos'))
                             ->helperText('Upload logo toko untuk ditampilkan di receipt')
                             ->nullable(),
 
@@ -163,6 +167,7 @@ class StoreResource extends Resource
                     ->toggleable(),
                 Tables\Columns\ImageColumn::make('logo_path')
                     ->label('Logo')
+                    ->disk('r2')
                     ->circular()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('printer_device_id')

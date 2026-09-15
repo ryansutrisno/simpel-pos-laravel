@@ -90,7 +90,7 @@ class Store extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        return $this->logo_path ? Storage::url($this->logo_path) : null;
+        return $this->logo_path ? Storage::disk('r2')->url($this->logo_path) : null;
     }
 
     public function getReturnDeadline(): int

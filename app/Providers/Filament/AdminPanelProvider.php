@@ -35,6 +35,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -47,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName(fn () => \App\Models\AppSettings::get('app_name', 'Simpel POS'))
-            ->brandLogo(fn () => \App\Models\AppSettings::get('app_logo') ? asset('storage/'.\App\Models\AppSettings::get('app_logo')) : null)
+            ->brandLogo(fn () => \App\Models\AppSettings::get('app_logo') ? Storage::disk('r2')->url(\App\Models\AppSettings::get('app_logo')) : null)
             ->spa()
             ->sidebarCollapsibleOnDesktop()
             ->colors([

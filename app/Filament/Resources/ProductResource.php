@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
+use App\Support\ImageCompressor;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
@@ -11,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
@@ -130,9 +132,11 @@ class ProductResource extends Resource
                 Forms\Components\Section::make('Gambar Produk')
                     ->schema([
                         FileUpload::make('image')
+                            ->disk('r2')
                             ->directory('products')
                             ->image()
                             ->maxSize(2048)
+                            ->saveUploadedFileUsing(fn (UploadedFile $file): string => ImageCompressor::compressToWebp($file, 'r2', 'products'))
                             ->label('Foto Produk'),
                     ]),
             ]);
@@ -144,7 +148,7 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Foto Produk')
-                    ->disk('public'),
+                    ->disk('r2'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Produk')
                     ->searchable(),

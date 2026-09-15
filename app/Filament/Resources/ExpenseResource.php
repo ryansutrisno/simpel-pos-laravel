@@ -88,6 +88,8 @@ class ExpenseResource extends Resource
                         Forms\Components\FileUpload::make('attachment')
                             ->label('Lampiran')
                             ->image()
+                            ->disk('r2')
+                            ->directory('expenses')
                             ->downloadable()
                             ->columnSpanFull(),
                     ])

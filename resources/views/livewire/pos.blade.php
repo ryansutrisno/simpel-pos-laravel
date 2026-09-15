@@ -98,7 +98,7 @@
                     <div class="aspect-w-1 aspect-h-1 mb-2">
                 @if($product->image)
                 <img
-                            src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}"
+                            src="{{ \Illuminate\Support\Facades\Storage::disk('r2')->url($product->image) }}" alt="{{ $product->name }}"
                             class="w-full h-32 object-cover rounded-lg">
                 @else
                 <div
