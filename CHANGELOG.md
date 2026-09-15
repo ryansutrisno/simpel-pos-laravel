@@ -1,3 +1,11 @@
+## [2.22.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.21.0...v2.22.0) (2026-09-15)
+
+
+### ✨ Features
+
+* **auth:** make demo accounts clickable on login form ([69c39b6](https://github.com/ryansutrisno/simpel-pos-laravel/commit/69c39b64682eae93958211908f3b38383e3c29c7))
+* **storage:** migrate media uploads to Cloudflare R2 ([a930c88](https://github.com/ryansutrisno/simpel-pos-laravel/commit/a930c8895a6649f26d6e33b1e1799aaab824dd29))
+
 ## [2.21.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.20.0...v2.21.0) (2026-09-13)
 
 
