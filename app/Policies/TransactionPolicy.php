@@ -23,7 +23,8 @@ class TransactionPolicy
      */
     public function view(User $user, Transaction $transaction): bool
     {
-        return $user->can('view_transaction');
+        return $user->can('view_transaction')
+            && $user->canAccessStore($transaction->store_id);
     }
 
     /**

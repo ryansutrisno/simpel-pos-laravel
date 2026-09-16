@@ -2,6 +2,8 @@
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     Category::query()->delete();
@@ -10,7 +12,13 @@ beforeEach(function () {
 
 describe('Bulk Import Page', function () {
     it('page loads successfully', function () {
-        $this->actingAs(\App\Models\User::factory()->create());
+        $user = User::factory()->create();
+        $user->assignRole(Role::firstOrCreate([
+            'name' => 'super_admin',
+            'guard_name' => 'web',
+        ]));
+
+        $this->actingAs($user);
 
         $this->get('/admin/bulk-import-products')
             ->assertStatus(200);

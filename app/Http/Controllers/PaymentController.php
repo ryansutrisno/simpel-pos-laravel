@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\MayarWebhookRequest;
 use App\Models\PaymentGatewayConfig;
 use App\Models\Store;
 use App\Models\Transaction;
+use App\Services\PaymentGateway\MayarGateway;
 use App\Services\PaymentGateway\PaymentGatewayFactory;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -80,15 +84,25 @@ class PaymentController extends Controller
             $gateway = PaymentGatewayFactory::make($config->provider, $config->getGatewayConfig());
 
             if ($validated['method'] === 'qris') {
-                // Generate QRIS
-                $result = $gateway->createQRIS((int) $transaction->total);
+                $this->expirePendingQrisTransactions($transaction);
+                $result = $gateway instanceof MayarGateway
+                    ? $gateway->createQRIS((int) $transaction->total, [
+                        'app_transaction_id' => (string) $transaction->id,
+                        'store_id' => (string) $transaction->store_id,
+                        'human_reference' => 'POS-'.$transaction->id,
+                    ])
+                    : $gateway->createQRIS((int) $transaction->total);
 
                 if ($result['success']) {
+                    $expiresAt = now()->addHours(24);
                     $transaction->update([
                         'payment_method' => 'qris',
                         'payment_gateway_provider' => $config->provider,
                         'payment_gateway_status' => 'pending',
+                        'payment_gateway_qr_string' => $result['qr_string'] ?? null,
+                        'payment_gateway_expires_at' => $expiresAt,
                     ]);
+                    $result['expires_at'] = $expiresAt->getTimestampMs();
                 }
 
                 return response()->json($result);
@@ -105,6 +119,8 @@ class PaymentController extends Controller
                     'callback_url' => route('payment.callback', ['provider' => $config->provider]),
                     'expired_at' => now()->addHours(24),
                     'transaction_id' => $transaction->id,
+                    'store_id' => $transaction->store_id,
+                    'human_reference' => "POS-{$transaction->id}",
                     'pos_reference' => "POS-{$transaction->id}",
                     'items' => $transaction->items->map(fn ($item) => [
                         'description' => $item->product->name ?? 'Product',
@@ -169,7 +185,7 @@ class PaymentController extends Controller
             $store = Store::first();
             if ($store && $store->payment_gateway_enabled) {
                 // For QRIS, status is updated via webhook
-                if ($transaction->payment_method === 'qris' && ! $transaction->payment_gateway_reference) {
+                if ($transaction->payment_method === 'qris' && ! $transaction->payment_gateway_reference && ! $transaction->payment_gateway_transaction_id) {
                     return response()->json([
                         'success' => true,
                         'status' => $transaction->payment_gateway_status ?? 'pending',
@@ -194,7 +210,7 @@ class PaymentController extends Controller
 
             // For QRIS, we don't have a reference to check status
             // Status is updated via webhook
-            if ($transaction->payment_method === 'qris' && ! $transaction->payment_gateway_reference) {
+            if ($transaction->payment_method === 'qris' && ! $transaction->payment_gateway_reference && ! $transaction->payment_gateway_transaction_id) {
                 return response()->json([
                     'success' => true,
                     'status' => $transaction->payment_gateway_status ?? 'pending',
@@ -202,8 +218,10 @@ class PaymentController extends Controller
                 ]);
             }
 
-            if ($transaction->payment_gateway_reference) {
-                $result = $gateway->checkStatus($transaction->payment_gateway_reference);
+            if ($transaction->payment_gateway_reference || $transaction->payment_gateway_transaction_id) {
+                $reference = $transaction->payment_gateway_transaction_id
+                    ?: $transaction->payment_gateway_reference;
+                $result = $gateway->checkStatus($reference);
 
                 if ($result['success'] && $result['status'] !== $transaction->payment_gateway_status) {
                     // Update transaction status
@@ -238,81 +256,145 @@ class PaymentController extends Controller
     /**
      * Handle webhook callback from Mayar.
      */
-    public function handleMayarWebhook(Request $request): JsonResponse
+    public function handleMayarWebhook(MayarWebhookRequest $request, string $token): JsonResponse
     {
-        Log::info('Mayar webhook received', [
-            'payload' => $request->all(),
-        ]);
+        $config = PaymentGatewayConfig::query()
+            ->where('provider', PaymentGatewayConfig::PROVIDER_MAYAR)
+            ->where('is_active', true)
+            ->where('webhook_path_token', $token)
+            ->firstOrFail();
+        $gateway = PaymentGatewayFactory::make(PaymentGatewayConfig::PROVIDER_MAYAR, $config->getGatewayConfig());
+        if (! $gateway instanceof MayarGateway) {
+            return response()->json(['status' => 'retry'], 500);
+        }
 
-        try {
-            $config = PaymentGatewayConfig::where('provider', 'mayar')
-                ->where('is_active', true)
-                ->first();
+        $parsed = $gateway->parseWebhook($request->validated());
 
-            if (! $config) {
-                Log::warning('Mayar webhook received but no active config', [
-                    'payload' => $request->all(),
-                ]);
+        if (! $parsed || $parsed['event'] !== 'payment.received') {
+            return response()->json(['status' => 'ignored']);
+        }
 
-                return response()->json(['error' => 'Config not found'], 404);
-            }
+        $detail = $gateway->fetchTransaction($parsed['delivery_id']);
+        $detailStatus = $detail['status'] ?? 'unknown';
+        $detailAmount = (int) ($detail['amount'] ?? 0);
 
-            $gateway = PaymentGatewayFactory::make('mayar', $config->getGatewayConfig());
-            $data = $gateway->handleWebhook($request->all());
-
-            // Find transaction
-            $transaction = null;
-
-            // Try by reference first
-            if ($data['reference']) {
-                $transaction = Transaction::where('payment_gateway_reference', $data['reference'])
-                    ->first();
-            }
-
-            // Try by external reference (transaction_id in extraData)
-            if (! $transaction && $data['external_reference']) {
-                $transaction = Transaction::find($data['external_reference']);
-            }
-
-            if (! $transaction) {
-                Log::warning('Transaction not found for webhook', [
-                    'reference' => $data['reference'],
-                    'external_reference' => $data['external_reference'],
-                ]);
-
-                return response()->json(['error' => 'Transaction not found'], 404);
-            }
-
-            // Update transaction
-            $updateData = [
-                'payment_gateway_status' => $data['status'],
+        if (! ($detail['success'] ?? false)) {
+            $logContext = [
+                'transaction_id' => null,
+                'mayar_status' => $detailStatus,
+                'amount' => $detailAmount,
+                'ip' => $request->ip(),
             ];
 
-            if ($data['status'] === 'paid') {
-                $updateData['status'] = 'completed';
-                $updateData['paid_at'] = $data['paid_at'] ?? now();
-            } elseif ($data['status'] === 'expired') {
-                $updateData['status'] = 'cancelled';
+            if (($detail['http_status'] ?? null) === 404) {
+                Log::warning('Mayar transaction detail not found', $logContext);
+
+                return response()->json(['status' => 'ignored']);
             }
 
-            $transaction->update($updateData);
+            Log::warning('Mayar transaction detail unavailable', $logContext);
 
-            Log::info('Payment status updated via webhook', [
-                'transaction_id' => $transaction->id,
-                'status' => $data['status'],
-            ]);
-
-            return response()->json(['status' => 'ok']);
-
-        } catch (\Exception $e) {
-            Log::error('Webhook processing failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'payload' => $request->all(),
-            ]);
-
-            return response()->json(['error' => 'Processing failed'], 500);
+            return response()->json(['status' => 'retry'], 500);
         }
+
+        $extraData = $detail['extraData'] ?? [];
+        $localTransactionId = $extraData['app_transaction_id'] ?? null;
+        $transaction = is_scalar($localTransactionId)
+            ? Transaction::query()
+                ->whereKey((string) $localTransactionId)
+                ->where('store_id', $config->store_id)
+                ->where('payment_gateway_provider', PaymentGatewayConfig::PROVIDER_MAYAR)
+                ->first()
+            : null;
+
+        if (! $transaction) {
+            Log::warning('Mayar delivery has no matching transaction', [
+                'transaction_id' => null,
+                'mayar_status' => $detailStatus,
+                'amount' => $detailAmount,
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json(['status' => 'ignored']);
+        }
+
+        $context = [
+            'transaction_id' => $transaction->id,
+            'mayar_status' => $detailStatus,
+            'amount' => $detailAmount,
+            'ip' => $request->ip(),
+        ];
+
+        if ($detailAmount !== (int) $transaction->total || ! is_scalar($localTransactionId) || (string) $localTransactionId !== (string) $transaction->id) {
+            Log::warning('Mayar transaction detail verification failed', $context);
+
+            return response()->json(['status' => 'ignored']);
+        }
+
+        if ($transaction->payment_method === 'qris'
+            && $transaction->payment_gateway_expires_at
+            && $transaction->payment_gateway_expires_at->isPast()
+            && $detailStatus === 'paid') {
+            Log::warning('Mayar QRIS transaction outside payment window', $context);
+
+            return response()->json(['status' => 'ignored']);
+        }
+
+        DB::transaction(function () use ($transaction, $detailStatus, $detail): void {
+            $lockedTransaction = Transaction::query()
+                ->whereKey($transaction->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $lockedTransaction || $lockedTransaction->payment_gateway_status === 'paid') {
+                return;
+            }
+
+            if ($lockedTransaction->payment_gateway_status !== 'pending') {
+                return;
+            }
+
+            if ($detailStatus === 'paid') {
+                $lockedTransaction->update([
+                    'payment_gateway_status' => 'paid',
+                    'status' => 'completed',
+                    'paid_at' => $lockedTransaction->paid_at ?? ($detail['paid_at'] ?? now()),
+                ]);
+
+                return;
+            }
+
+            if ($detailStatus === 'expired') {
+                $lockedTransaction->update([
+                    'payment_gateway_status' => 'expired',
+                    'status' => 'cancelled',
+                ]);
+            }
+        });
+
+        Log::info('Mayar transaction webhook reconciled', $context);
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function handleCallback(string $provider): RedirectResponse
+    {
+        abort_unless(PaymentGatewayFactory::isSupported($provider), 404);
+
+        return redirect('/admin')->with('payment_callback', true);
+    }
+
+    protected function expirePendingQrisTransactions(Transaction $transaction): void
+    {
+        Transaction::query()
+            ->where('store_id', $transaction->store_id)
+            ->where('id', '!=', $transaction->id)
+            ->where('payment_method', 'qris')
+            ->where('payment_gateway_status', 'pending')
+            ->update([
+                'payment_gateway_status' => 'expired',
+                'status' => 'cancelled',
+            ]);
     }
 
     /**
@@ -334,14 +416,25 @@ class PaymentController extends Controller
             ]);
 
             if ($method === 'qris') {
-                $result = $gateway->createQRIS((int) $transaction->total);
+                $this->expirePendingQrisTransactions($transaction);
+                $result = $gateway instanceof MayarGateway
+                    ? $gateway->createQRIS((int) $transaction->total, [
+                        'app_transaction_id' => (string) $transaction->id,
+                        'store_id' => (string) $transaction->store_id,
+                        'human_reference' => 'POS-'.$transaction->id,
+                    ])
+                    : $gateway->createQRIS((int) $transaction->total);
 
                 if ($result['success']) {
+                    $expiresAt = now()->addHours(24);
                     $transaction->update([
                         'payment_method' => 'qris',
                         'payment_gateway_provider' => $storeConfig['provider'],
                         'payment_gateway_status' => 'pending',
+                        'payment_gateway_qr_string' => $result['qr_string'] ?? null,
+                        'payment_gateway_expires_at' => $expiresAt,
                     ]);
+                    $result['expires_at'] = $expiresAt->getTimestampMs();
                 }
 
                 return response()->json($result);
@@ -357,6 +450,8 @@ class PaymentController extends Controller
                     'callback_url' => route('payment.callback', ['provider' => $storeConfig['provider']]),
                     'expired_at' => now()->addHours(24),
                     'transaction_id' => $transaction->id,
+                    'store_id' => $transaction->store_id,
+                    'human_reference' => "POS-{$transaction->id}",
                     'pos_reference' => "POS-{$transaction->id}",
                     'items' => $transaction->items->map(fn ($item) => [
                         'description' => $item->product->name ?? 'Product',

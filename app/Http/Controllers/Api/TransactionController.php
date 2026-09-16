@@ -19,6 +19,8 @@ class TransactionController extends Controller
 
     public function show(Transaction $transaction): JsonResponse
     {
+        $this->authorize('view', $transaction);
+
         $transaction->load('items.product', 'user');
         $store = \App\Models\Store::first();
 
@@ -67,6 +69,8 @@ class TransactionController extends Controller
      */
     public function preview(Request $request, Transaction $transaction): JsonResponse
     {
+        $this->authorize('view', $transaction);
+
         $transaction->load('items.product', 'user');
         $store = \App\Models\Store::first();
 
@@ -80,7 +84,7 @@ class TransactionController extends Controller
             $template = $this->templateService->getActiveTemplate($store);
         }
 
-        if (!$template) {
+        if (! $template) {
             return response()->json([
                 'error' => 'No receipt template found',
             ], 404);

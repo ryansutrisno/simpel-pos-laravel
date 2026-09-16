@@ -88,6 +88,7 @@ class ExpenseResource extends Resource
                         Forms\Components\FileUpload::make('attachment')
                             ->label('Lampiran')
                             ->image()
+                            ->maxSize(2048)
                             ->disk('r2')
                             ->directory('expenses')
                             ->downloadable()

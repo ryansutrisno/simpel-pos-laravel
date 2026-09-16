@@ -19,7 +19,10 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return match ($panel->getId()) {
+            'admin' => $this->hasAnyRole(['super_admin', 'admin', 'manager', 'kasir']),
+            default => false,
+        };
     }
 
     protected $fillable = [
@@ -104,9 +107,13 @@ class User extends Authenticatable implements FilamentUser
         return $this->stores;
     }
 
-    public function canAccessStore(int $storeId): bool
+    public function canAccessStore(?int $storeId): bool
     {
         if ($this->isSuperAdmin() || $this->isAdmin()) {
+            return true;
+        }
+
+        if ($storeId === null) {
             return true;
         }
 

@@ -2,16 +2,14 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\PaymentGatewayConfig;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Middleware to verify Mayar webhook requests.
- *
- * Validates that the incoming webhook is from Mayar by checking
- * the request signature and API key.
+ * Validates the unguessable Mayar webhook path and request size.
  */
 class VerifyMayarWebhook
 {
@@ -22,52 +20,44 @@ class VerifyMayarWebhook
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Log all webhook requests for debugging
-        Log::info('Mayar webhook received', [
-            'ip' => $request->ip(),
-            'url' => $request->url(),
-            'headers' => $request->headers->all(),
-        ]);
+        $event = $request->input('event');
+        $deliveryId = $request->input('data.id');
+        $token = (string) $request->route('token');
+        $config = PaymentGatewayConfig::query()
+            ->where('provider', PaymentGatewayConfig::PROVIDER_MAYAR)
+            ->where('is_active', true)
+            ->whereNotNull('webhook_path_token')
+            ->where('webhook_path_token', $token)
+            ->first();
 
-        // For Mayar, we don't have signature verification in the basic API
-        // Instead, we can verify the request comes from a trusted source
-        // by checking if the data structure is valid
-        if (! $this->isValidPayload($request->all())) {
-            Log::warning('Invalid Mayar webhook payload', [
-                'data' => $request->all(),
+        if (! $config || ! hash_equals((string) $config->webhook_path_token, $token)) {
+            Log::warning('Mayar webhook rejected', [
+                'event' => $event,
+                'delivery_id' => $deliveryId,
+                'outcome' => 'unknown_token',
             ]);
 
-            return response()->json(['error' => 'Invalid payload'], 400);
+            return response()->json(['message' => 'Not found'], 404);
         }
 
-        return $next($request);
-    }
+        if ((int) $request->header('Content-Length', 0) > 16384 || strlen($request->getContent()) > 16384) {
+            Log::warning('Mayar webhook rejected', [
+                'event' => $event,
+                'delivery_id' => $deliveryId,
+                'outcome' => 'payload_too_large',
+            ]);
 
-    /**
-     * Validate the webhook payload structure.
-     */
-    protected function isValidPayload(array $data): bool
-    {
-        // Required fields for Mayar webhook
-        $required = ['transactionId', 'status', 'amount'];
-
-        foreach ($required as $field) {
-            if (! isset($data[$field])) {
-                return false;
-            }
+            return response()->json(['message' => 'Payload too large'], 413);
         }
 
-        // Validate status is one of expected values
-        $validStatuses = ['UNPAID', 'PAID', 'EXPIRED'];
-        if (! in_array(strtoupper($data['status']), $validStatuses)) {
-            return false;
-        }
+        $response = $next($request);
 
-        // Validate amount is numeric
-        if (! is_numeric($data['amount'])) {
-            return false;
-        }
+        Log::info('Mayar webhook processed', [
+            'event' => $event,
+            'delivery_id' => $deliveryId,
+            'outcome' => $response->getStatusCode(),
+        ]);
 
-        return true;
+        return $response;
     }
 }

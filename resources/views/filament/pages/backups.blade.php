@@ -77,7 +77,7 @@
                                         <div class="flex items-center justify-end gap-2">
                                             {{-- Download --}}
                                             <a
-                                                href="{{ route('backup.download', ['file' => $backup['name']]) }}"
+                                                href="{{ route('backup.download', ['file' => $backup['path']]) }}"
                                                 target="_blank"
                                                 class="inline-flex items-center justify-center w-8 h-8 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
                                                 title="Download"

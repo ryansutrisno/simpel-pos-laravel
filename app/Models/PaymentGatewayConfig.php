@@ -6,6 +6,7 @@ use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Str;
 
 class PaymentGatewayConfig extends Model
 {
@@ -26,7 +27,17 @@ class PaymentGatewayConfig extends Model
         'provider_config',
         'enabled_methods',
         'webhook_url',
+        'webhook_path_token',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (PaymentGatewayConfig $config): void {
+            if (empty($config->webhook_path_token)) {
+                $config->webhook_path_token = Str::random(48);
+            }
+        });
+    }
 
     protected function casts(): array
     {

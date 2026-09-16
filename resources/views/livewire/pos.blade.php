@@ -950,7 +950,7 @@
 
                 async checkPaymentStatus() {
                     try {
-                        const response = await fetch(`/payment/status/${this.transactionId}`);
+                        const response = await fetch(`/api/payments/${this.transactionId}/status`);
                         const data = await response.json();
 
                         if (data.success && data.status === 'paid') {

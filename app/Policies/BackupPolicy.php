@@ -11,7 +11,7 @@ class BackupPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasAnyRole(['super_admin', 'admin']);
     }
 
     /**
@@ -19,7 +19,7 @@ class BackupPolicy
      */
     public function view(User $user): bool
     {
-        return true;
+        return $user->hasAnyRole(['super_admin', 'admin']);
     }
 
     /**

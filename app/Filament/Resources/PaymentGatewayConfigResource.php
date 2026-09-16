@@ -75,8 +75,30 @@ class PaymentGatewayConfigResource extends Resource
                             ->label('Webhook URL')
                             ->url()
                             ->maxLength(255)
-                            ->placeholder('https://your-domain.com/webhook/mayar')
                             ->nullable(),
+
+                        Forms\Components\TextInput::make('webhook_mayar_display_url')
+                            ->label('URL Webhook Mayar')
+                            ->readOnly()
+                            ->dehydrated(false)
+                            ->formatStateUsing(fn (?PaymentGatewayConfig $record) => $record
+                                ? route('payment.webhook.mayar', ['token' => $record->webhook_path_token])
+                                : null)
+                            ->placeholder('Simpan dulu untuk membuat token webhook')
+                            ->helperText('URL ini dibuat secara otomatis dari token webhook dan harus didaftarkan di dashboard Mayar sebagai webhook URL.')
+                            ->suffixAction(function ($state) {
+                                if (blank($state)) {
+                                    return null;
+                                }
+
+                                return Forms\Components\Actions\Action::make('copyWebhookUrl')
+                                    ->icon('heroicon-m-clipboard-document')
+                                    ->tooltip('Salin URL')
+                                    ->alpineClickHandler(sprintf(
+                                        'navigator.clipboard.writeText(%s)',
+                                        (string) json_encode($state),
+                                    ));
+                            }),
                     ])
                     ->columns(1)
                     ->visible(fn ($get) => $get('provider') === PaymentGatewayConfig::PROVIDER_MAYAR),

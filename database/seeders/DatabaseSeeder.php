@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AppSettings;
 use App\Models\Customer;
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -14,6 +15,11 @@ class DatabaseSeeder extends Seeder
     {
         // Seed AppSettings first (singleton)
         AppSettings::getInstance();
+
+        $demoStore = Store::firstOrCreate(
+            ['name' => 'Toko Utama'],
+            ['address' => 'Alamat Toko Utama']
+        );
 
         $users = [
             [
@@ -55,6 +61,10 @@ class DatabaseSeeder extends Seeder
             $role = Role::where('name', $userData['role'])->first();
             if ($role && ! $user->hasRole($userData['role'])) {
                 $user->assignRole($role);
+            }
+
+            if (! $user->isSuperAdmin()) {
+                $user->stores()->syncWithoutDetaching([$demoStore->id]);
             }
         }
 

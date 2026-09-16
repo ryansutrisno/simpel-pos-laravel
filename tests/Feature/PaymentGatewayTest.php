@@ -77,6 +77,7 @@ describe('Payment API Endpoints', function () {
         ]);
 
         $this->transaction = Transaction::factory()->create([
+            'store_id' => $this->store->id,
             'total' => 10000,
             'payment_gateway_status' => 'pending',
         ]);
@@ -84,7 +85,7 @@ describe('Payment API Endpoints', function () {
 
     it('can initiate qris payment', function () {
         Http::fake([
-            'https://api.mayar.club/hl/v1/qrcode/create' => Http::response([
+            'https://api.mayar.io/hl/v2/qr-codes/create' => Http::response([
                 'statusCode' => 200,
                 'data' => [
                     'url' => 'https://example.com/qr.png',
@@ -137,6 +138,19 @@ describe('Payment API Endpoints', function () {
         $this->transaction->update([
             'payment_gateway_provider' => 'mayar',
             'payment_gateway_status' => 'pending',
+            'payment_gateway_reference' => 'invoice-reference',
+            'payment_gateway_transaction_id' => 'transaction-id',
+        ]);
+
+        Http::fake([
+            'https://api.mayar.io/hl/v2/transactions/transaction-id' => Http::response([
+                'data' => [
+                    'id' => 'transaction-id',
+                    'status' => 'unpaid',
+                    'amount' => 10000,
+                    'extraData' => [],
+                ],
+            ]),
         ]);
 
         $response = $this->getJson("/api/payments/{$this->transaction->id}/status");
@@ -151,7 +165,7 @@ describe('Payment API Endpoints', function () {
 
 describe('Webhook Handling', function () {
     beforeEach(function () {
-        PaymentGatewayConfig::create([
+        $this->config = PaymentGatewayConfig::create([
             'store_id' => $this->store->id,
             'provider' => 'mayar',
             'is_active' => true,
@@ -159,25 +173,39 @@ describe('Webhook Handling', function () {
         ]);
 
         $this->transaction = Transaction::factory()->create([
+            'store_id' => $this->store->id,
             'total' => 10000,
             'payment_gateway_provider' => 'mayar',
             'payment_gateway_reference' => 'inv-test-123',
             'payment_gateway_status' => 'pending',
         ]);
+
+        $this->webhookUrl = '/webhook/mayar/'.$this->config->webhook_path_token;
     });
 
     it('processes paid webhook correctly', function () {
+        Http::fake([
+            'https://api.mayar.io/hl/v2/transactions/dlv_1' => Http::response([
+                'data' => [
+                    'id' => 'dlv_1',
+                    'status' => 'paid',
+                    'amount' => 10000,
+                    'extraData' => ['app_transaction_id' => (string) $this->transaction->id],
+                ],
+            ]),
+        ]);
+
         $payload = [
-            'transactionId' => 'inv-test-123',
-            'status' => 'PAID',
-            'amount' => 10000,
-            'paymentMethod' => 'QRIS',
-            'extraData' => [
-                'transaction_id' => $this->transaction->id,
+            'event' => 'payment.received',
+            'data' => [
+                'id' => 'dlv_1',
+                'status' => true,
+                'amount' => 10000,
+                'merchantId' => 'merchant-test',
             ],
         ];
 
-        $response = $this->postJson('/webhook/mayar', $payload);
+        $response = $this->postJson($this->webhookUrl, $payload);
 
         $response->assertOk();
 
@@ -186,16 +214,28 @@ describe('Webhook Handling', function () {
     });
 
     it('processes expired webhook correctly', function () {
+        Http::fake([
+            'https://api.mayar.io/hl/v2/transactions/dlv_1' => Http::response([
+                'data' => [
+                    'id' => 'dlv_1',
+                    'status' => 'expired',
+                    'amount' => 10000,
+                    'extraData' => ['app_transaction_id' => (string) $this->transaction->id],
+                ],
+            ]),
+        ]);
+
         $payload = [
-            'transactionId' => 'inv-test-123',
-            'status' => 'EXPIRED',
-            'amount' => 10000,
-            'extraData' => [
-                'transaction_id' => $this->transaction->id,
+            'event' => 'payment.received',
+            'data' => [
+                'id' => 'dlv_1',
+                'status' => false,
+                'amount' => 10000,
+                'merchantId' => 'merchant-test',
             ],
         ];
 
-        $response = $this->postJson('/webhook/mayar', $payload);
+        $response = $this->postJson($this->webhookUrl, $payload);
 
         $response->assertOk();
 
@@ -204,26 +244,41 @@ describe('Webhook Handling', function () {
     });
 
     it('returns 404 for non-existent transaction', function () {
+        Http::fake([
+            'https://api.mayar.io/hl/v2/transactions/dlv-missing' => Http::response([
+                'message' => 'Not found',
+            ], 404),
+        ]);
+
         $payload = [
-            'transactionId' => 'inv-nonexistent',
-            'status' => 'PAID',
-            'amount' => 10000,
-            'extraData' => [],
+            'event' => 'payment.received',
+            'data' => [
+                'id' => 'dlv-missing',
+                'status' => true,
+                'amount' => 10000,
+                'merchantId' => 'merchant-test',
+            ],
         ];
 
-        $response = $this->postJson('/webhook/mayar', $payload);
+        $response = $this->postJson($this->webhookUrl, $payload);
 
-        $response->assertStatus(404);
+        $response->assertOk();
     });
 
     it('rejects invalid webhook payload', function () {
         $payload = [
-            'invalid' => 'data',
+            'event' => 'payment.received',
+            'data' => [
+                'id' => 'dlv-invalid',
+                'status' => 'PAID',
+                'amount' => 10000,
+                'merchantId' => 'merchant-test',
+            ],
         ];
 
-        $response = $this->postJson('/webhook/mayar', $payload);
+        $response = $this->postJson($this->webhookUrl, $payload);
 
-        $response->assertStatus(400);
+        $response->assertStatus(422);
     });
 });
 
@@ -241,7 +296,7 @@ describe('Payment Flow Integration', function () {
 
     it('completes full payment flow', function () {
         Http::fake([
-            'https://api.mayar.club/hl/v1/qrcode/create' => Http::response([
+            'https://api.mayar.io/hl/v2/qr-codes/create' => Http::response([
                 'statusCode' => 200,
                 'data' => [
                     'url' => 'https://example.com/qr.png',
@@ -251,6 +306,7 @@ describe('Payment Flow Integration', function () {
         ]);
 
         $transaction = Transaction::factory()->create([
+            'store_id' => $this->store->id,
             'total' => 50000,
             'payment_gateway_status' => 'pending',
         ]);
@@ -265,16 +321,29 @@ describe('Payment Flow Integration', function () {
         expect($transaction->payment_method)->toBe('qris');
 
         // Step 2: Simulate webhook callback
+        $config = PaymentGatewayConfig::where('store_id', $this->store->id)->first();
+        Http::fake([
+            'https://api.mayar.io/hl/v2/transactions/dlv-flow' => Http::response([
+                'data' => [
+                    'id' => 'dlv-flow',
+                    'status' => 'paid',
+                    'amount' => 50000,
+                    'extraData' => ['app_transaction_id' => (string) $transaction->id],
+                ],
+            ]),
+        ]);
+
         $webhookPayload = [
-            'transactionId' => $transaction->payment_gateway_reference ?? 'test-ref',
-            'status' => 'PAID',
-            'amount' => 50000,
-            'extraData' => [
-                'transaction_id' => $transaction->id,
+            'event' => 'payment.received',
+            'data' => [
+                'id' => 'dlv-flow',
+                'status' => true,
+                'amount' => 50000,
+                'merchantId' => 'merchant-test',
             ],
         ];
 
-        $this->postJson('/webhook/mayar', $webhookPayload)->assertOk();
+        $this->postJson('/webhook/mayar/'.$config->webhook_path_token, $webhookPayload)->assertOk();
 
         $transaction->refresh();
         expect($transaction->payment_gateway_status)->toBe('paid');

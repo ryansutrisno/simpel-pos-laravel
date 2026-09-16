@@ -8,41 +8,19 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Mayar payment gateway implementation.
- *
- * Supports QRIS generation and invoice creation via Mayar API.
- *
- * @see https://docs.mayar.id/
  */
 class MayarGateway implements PaymentGatewayInterface
 {
-    /**
-     * Base URL for Mayar API.
-     */
     protected string $baseUrl;
 
-    /**
-     * API Key for authentication.
-     */
     protected string $apiKey;
 
-    /**
-     * Whether to use sandbox environment.
-     */
     protected bool $sandbox;
 
-    /**
-     * Additional configuration.
-     */
     protected array $config;
 
     /**
-     * Create a new Mayar gateway instance.
-     *
-     * @param array{
-     *     api_key: string,
-     *     sandbox: bool,
-     *     config?: array
-     * } $config
+     * @param  array{api_key: string, sandbox?: bool, config?: array}  $config
      */
     public function __construct(array $config)
     {
@@ -50,40 +28,26 @@ class MayarGateway implements PaymentGatewayInterface
         $this->sandbox = $config['sandbox'] ?? true;
         $this->config = $config['config'] ?? [];
         $this->baseUrl = $this->sandbox
-            ? 'https://api.mayar.club/hl/v1'
-            : 'https://api.mayar.id/hl/v1';
+            ? config('services.mayar.sandbox_url', 'https://api.mayar.io')
+            : config('services.mayar.production_url', 'https://api.mayar.id');
     }
 
-    /**
-     * Get the provider name.
-     */
     public function getProviderName(): string
     {
         return 'mayar';
     }
 
     /**
-     * Make an authenticated HTTP request to Mayar API.
-     *
-     * @param  string  $method  HTTP method (get, post, etc.)
-     * @param  string  $endpoint  API endpoint (without base URL)
-     * @param  array  $data  Request data
-     * @return array{
-     *     success: bool,
-     *     data?: array,
-     *     error?: string
-     * }
+     * @return array{success: bool, data?: array, error?: string, http_status?: int, transient?: bool}
      */
     protected function request(string $method, string $endpoint, array $data = []): array
     {
         try {
-            $url = $this->baseUrl.$endpoint;
-
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$this->apiKey,
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-            ])->$method($url, $data);
+            ])->$method($this->baseUrl.$endpoint, $data);
 
             if ($response->successful()) {
                 return [
@@ -96,32 +60,30 @@ class MayarGateway implements PaymentGatewayInterface
             Log::error('Mayar API error', [
                 'endpoint' => $endpoint,
                 'status' => $response->status(),
-                'error' => $error,
+                'error' => is_array($error) ? implode(', ', $error) : $error,
             ]);
 
             return [
                 'success' => false,
                 'error' => is_array($error) ? implode(', ', $error) : $error,
+                'http_status' => $response->status(),
+                'transient' => $response->serverError(),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $exception) {
             Log::error('Mayar API exception', [
                 'endpoint' => $endpoint,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Failed to connect to payment gateway: '.$e->getMessage(),
+                'error' => 'Failed to connect to payment gateway',
+                'transient' => true,
             ];
         }
     }
 
-    /**
-     * Create a QRIS payment code.
-     *
-     * @param  int  $amount  Amount in IDR (minimum 1000)
-     */
-    public function createQRIS(int $amount): array
+    public function createQRIS(int $amount, array $extraData = []): array
     {
         if ($amount < 1000) {
             return [
@@ -130,36 +92,36 @@ class MayarGateway implements PaymentGatewayInterface
             ];
         }
 
-        $result = $this->request('post', '/qrcode/create', [
+        $payload = [
             'amount' => $amount,
-        ]);
+            'extraData' => $extraData,
+        ];
+
+        $result = $this->request('post', '/hl/v2/qr-codes/create', $payload);
 
         if (! $result['success']) {
             return $result;
         }
 
-        // Response format: {"statusCode": 200, "data": {"url": "...", "amount": ...}}
         $data = $result['data']['data'] ?? $result['data'] ?? [];
 
         return [
             'success' => true,
             'qr_image_url' => $data['url'] ?? null,
-            'amount' => $data['amount'] ?? $amount,
+            'qr_string' => $data['qrString'] ?? null,
+            'amount' => (int) ($data['amount'] ?? $amount),
+            'reference' => $data['id'] ?? null,
+            'transaction_id' => $data['transactionId'] ?? null,
         ];
     }
 
-    /**
-     * Create an invoice with customer details.
-     */
     public function createInvoice(array $data): array
     {
-        $items = array_map(function ($item) {
-            return [
-                'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'rate' => $item['rate'],
-            ];
-        }, $data['items'] ?? []);
+        $items = array_map(static fn (array $item): array => [
+            'description' => $item['description'],
+            'quantity' => $item['quantity'],
+            'rate' => $item['rate'],
+        ], $data['items'] ?? []);
 
         $payload = [
             'name' => $data['customer_name'],
@@ -172,18 +134,19 @@ class MayarGateway implements PaymentGatewayInterface
                 : Carbon::parse($data['expired_at'])->toIso8601String(),
             'items' => $items,
             'extraData' => [
-                'transaction_id' => (string) $data['transaction_id'],
-                'pos_reference' => $data['pos_reference'],
+                'app_transaction_id' => (string) $data['transaction_id'],
+                'store_id' => (string) ($data['store_id'] ?? ''),
+                'human_reference' => $data['human_reference'] ?? $data['pos_reference'],
             ],
         ];
 
-        $result = $this->request('post', '/invoice/create', $payload);
+        $result = $this->request('post', '/hl/v2/invoices/create', $payload);
 
         if (! $result['success']) {
             return $result;
         }
 
-        $responseData = $result['data']['data'] ?? [];
+        $responseData = $result['data']['data'] ?? $result['data'] ?? [];
 
         return [
             'success' => true,
@@ -194,71 +157,76 @@ class MayarGateway implements PaymentGatewayInterface
         ];
     }
 
-    /**
-     * Check the status of a payment.
-     */
     public function checkStatus(string $reference): array
     {
-        $result = $this->request('get', '/invoice/detail', [
-            'id' => $reference,
-        ]);
+        $result = $this->fetchTransaction($reference);
 
         if (! $result['success']) {
             return $result;
         }
 
-        $data = $result['data']['data'] ?? [];
-        $status = strtolower($data['status'] ?? 'unknown');
+        return [
+            'success' => true,
+            'status' => match ($result['status']) {
+                'paid' => 'paid',
+                'unpaid', 'created' => 'pending',
+                'expired' => 'expired',
+                default => 'unknown',
+            },
+            'paid_at' => $result['paid_at'],
+            'data' => $result,
+        ];
+    }
 
-        // Map Mayar status to our standard status
-        $mappedStatus = match ($status) {
-            'unpaid' => 'pending',
-            'paid' => 'paid',
-            'expired' => 'expired',
-            default => 'unknown',
-        };
+    /**
+     * @return array{event: string, delivery_id: string, status_hint: bool, amount: int}
+     */
+    public function parseWebhook(array $payload): array
+    {
+        return [
+            'event' => (string) $payload['event'],
+            'delivery_id' => (string) $payload['data']['id'],
+            'status_hint' => (bool) $payload['data']['status'],
+            'amount' => (int) $payload['data']['amount'],
+        ];
+    }
+
+    /**
+     * @return array{success: bool, id?: string, status?: string, amount?: int, extraData?: array, paid_at?: ?string, error?: string, http_status?: int, transient?: bool}
+     */
+    public function fetchTransaction(string $id): array
+    {
+        $result = $this->request('get', '/hl/v2/transactions/'.rawurlencode($id));
+
+        if (! $result['success']) {
+            return $result;
+        }
+
+        $data = $result['data']['data'] ?? $result['data'] ?? [];
 
         return [
             'success' => true,
-            'status' => $mappedStatus,
-            'paid_at' => $data['paidAt'] ?? null,
+            'id' => (string) ($data['id'] ?? $id),
+            'status' => strtolower((string) ($data['status'] ?? 'unknown')),
+            'amount' => (int) ($data['amount'] ?? 0),
+            'extraData' => is_array($data['extraData'] ?? null) ? $data['extraData'] : [],
+            'paid_at' => $data['paidAt'] ?? $data['paid_at'] ?? null,
         ];
     }
 
-    /**
-     * Handle webhook callback from Mayar.
-     */
-    public function handleWebhook(array $data): array
+    public function handleWebhook(array $payload): array
     {
-        $status = strtolower($data['status'] ?? 'unknown');
-
-        // Map Mayar webhook status
-        $mappedStatus = match ($status) {
-            'unpaid' => 'pending',
-            'paid' => 'paid',
-            'expired' => 'expired',
-            default => 'unknown',
-        };
+        $parsed = $this->parseWebhook($payload);
 
         return [
-            'reference' => $data['transactionId'] ?? '',
-            'status' => $mappedStatus,
-            'amount' => $data['amount'] ?? 0,
-            'payment_method' => $data['paymentMethod'] ?? null,
-            'external_reference' => $data['extraData']['transaction_id'] ?? null,
-            'paid_at' => $data['paidAt'] ?? null,
+            'reference' => $parsed['delivery_id'],
+            'status' => $parsed['status_hint'] ? 'paid' : 'pending',
+            'amount' => $parsed['amount'],
         ];
     }
 
-    /**
-     * Cancel a pending payment.
-     */
     public function cancelPayment(string $reference): bool
     {
-        $result = $this->request('post', '/invoice/close', [
-            'id' => $reference,
-        ]);
-
-        return $result['success'];
+        return false;
     }
 }

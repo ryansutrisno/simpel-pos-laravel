@@ -21,6 +21,8 @@ class ReturnController extends Controller
             'user',
         ])->findOrFail($id);
 
+        $this->authorize('view', $return);
+
         return response()->json([
             'success' => true,
             'data' => $return,
@@ -37,6 +39,8 @@ class ReturnController extends Controller
             'customer',
             'user',
         ])->findOrFail($id);
+
+        $this->authorize('view', $return);
 
         $template = ReceiptTemplate::where('name', 'Return Receipt')
             ->where('is_active', true)
