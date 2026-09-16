@@ -1,3 +1,15 @@
+## [2.25.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.24.0...v2.25.0) (2026-09-16)
+
+
+### ✨ Features
+
+* **demo:** gate demo accounts by expiry and add permanent owner account ([1a71e54](https://github.com/ryansutrisno/simpel-pos-laravel/commit/1a71e5473322225b72c3b74f29073de688fd805b))
+
+
+### 🐛 Bug Fixes
+
+* **models:** import the DB facade used by Transaction::isFullyReturned() ([18486a3](https://github.com/ryansutrisno/simpel-pos-laravel/commit/18486a3572e776ef6b64cddcd20e44eb948ac518))
+
 ## [2.24.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.23.0...v2.24.0) (2026-09-16)
 
 
