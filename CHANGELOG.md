@@ -1,3 +1,10 @@
+## [2.24.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.23.0...v2.24.0) (2026-09-16)
+
+
+### ✨ Features
+
+* add comprehensive security hardening and access controls ([60bee18](https://github.com/ryansutrisno/simpel-pos-laravel/commit/60bee1879a1d8bb63c6c05d039882f971ae57cb4))
+
 ## [2.23.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.22.0...v2.23.0) (2026-09-15)
 
 
