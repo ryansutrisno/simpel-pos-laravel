@@ -19,6 +19,10 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
+        if ($this->is_demo_account && ! $this->hasActiveDemoAccess()) {
+            return false;
+        }
+
         return match ($panel->getId()) {
             'admin' => $this->hasAnyRole(['super_admin', 'admin', 'manager', 'kasir']),
             default => false,
@@ -30,6 +34,8 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'current_store_id',
+        'is_demo_account',
+        'demo_access_expires_at',
     ];
 
     protected $hidden = [
@@ -42,7 +48,14 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_demo_account' => 'boolean',
+            'demo_access_expires_at' => 'datetime',
         ];
+    }
+
+    public function hasActiveDemoAccess(): bool
+    {
+        return $this->demo_access_expires_at?->isFuture() ?? false;
     }
 
     public function suspendedTransactions(): HasMany

@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'demo' => [
+        'landing_url' => env('DEMO_LANDING_URL', 'https://simpel-pos.trazmedia.com'),
+    ],
+
+    'owner' => [
+        'email' => env('OWNER_EMAIL', 'owner@trazmedia.com'),
+        'password' => env('OWNER_PASSWORD'),
+    ],
+
 ];
