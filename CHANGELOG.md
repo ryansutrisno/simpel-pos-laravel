@@ -1,3 +1,10 @@
+## [2.25.1](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.25.0...v2.25.1) (2026-09-17)
+
+
+### 🐛 Bug Fixes
+
+* **bootstrap:** read trusted proxies without the container ([dffb247](https://github.com/ryansutrisno/simpel-pos-laravel/commit/dffb247f4c8b14f578307d6bcaf85c58e6073914))
+
 ## [2.25.0](https://github.com/ryansutrisno/simpel-pos-laravel/compare/v2.24.0...v2.25.0) (2026-09-16)
 
 
