@@ -5,6 +5,14 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * The middleware callback below runs while the HTTP kernel is being resolved,
+ * which happens before the container binds the "config" service. Reading the
+ * plain config array keeps this container-free while still honouring
+ * TRUSTED_PROXIES when it is provided as a real environment variable.
+ */
+$trustedProxies = (require __DIR__.'/../config/trustedproxy.php')['proxies'];
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -12,9 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
+    ->withMiddleware(function (Middleware $middleware) use ($trustedProxies) {
         $middleware->trustProxies(
-            at: config('trustedproxy.proxies'),
+            at: $trustedProxies,
             headers: Request::HEADER_X_FORWARDED_FOR
                 | Request::HEADER_X_FORWARDED_HOST
                 | Request::HEADER_X_FORWARDED_PORT
